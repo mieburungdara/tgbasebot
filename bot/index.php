@@ -1,14 +1,18 @@
 <?php
-// Definisikan path dasar CodeIgniter
-define('BASEPATH', __DIR__ . '/../system/');
-define('APPPATH', __DIR__ . '/../application/');
+
+// Definisikan path absolut yang kokoh untuk menghindari masalah lingkungan
+$root_path = realpath(__DIR__ . '/..');
+
+define('FCPATH', $root_path . '/');
+define('BASEPATH', FCPATH . 'system/');
+define('APPPATH', FCPATH . 'application/');
 define('ENVIRONMENT', $_ENV['CI_ENV'] ?? 'production');
 
 // Ubah direktori kerja ke direktori root proyek
-chdir(__DIR__ . '/..');
+chdir(FCPATH);
 
 // Muat autoloader Composer
-require_once 'vendor/autoload.php';
+require_once FCPATH . 'vendor/autoload.php';
 
 // Muat bootstrap CodeIgniter
 require_once BASEPATH . 'core/CodeIgniter.php';
@@ -19,18 +23,18 @@ require_once BASEPATH . 'core/CodeIgniter.php';
  * --------------------------------------------------------------------
  */
 
-// Dapatkan instance CodeIgniter
-$CI =& get_instance();
-
-// Muat model yang diperlukan
-$CI->load->model('Settings_model');
-$CI->load->model('Log_model');
-
-// Muat file-file bot yang modular
-require_once APPPATH . '../bot/ApiClient.php';
-require_once APPPATH . '../bot/BotHandler.php';
-
 try {
+    // Dapatkan instance CodeIgniter
+    $CI =& get_instance();
+
+    // Muat model yang diperlukan
+    $CI->load->model('Settings_model');
+    $CI->load->model('Log_model');
+
+    // Muat file-file bot yang modular
+    require_once FCPATH . 'bot/ApiClient.php';
+    require_once FCPATH . 'bot/BotHandler.php';
+
     // Ambil token bot dari database
     $botToken = $CI->Settings_model->get_setting('bot_token');
     if (empty($botToken)) {
@@ -49,12 +53,21 @@ try {
         $botHandler->handle($rawUpdate);
     }
 
-} catch (Exception $e) {
+} catch (Throwable $e) { // Tangkap Throwable untuk error fatal di PHP 7+
     // Jika terjadi error, catat pesannya menggunakan Log_model
-    if (isset($CI->Log_model)) {
-        $CI->Log_model->add_log('error', 'Bot Gagal: ' . $e->getMessage());
+    // Lakukan pemeriksaan manual untuk model log jika CI instance gagal
+    if (class_exists('CI_Controller', false)) {
+        $CI =& get_instance();
+        if (isset($CI->Log_model)) {
+            $CI->Log_model->add_log('error', 'Bot Gagal: ' . $e->getMessage() . ' di ' . $e->getFile() . ' baris ' . $e->getLine());
+        } else {
+            // Fallback jika Log_model tidak dapat dimuat
+            error_log('Bot Gagal: ' . $e->getMessage());
+        }
+    } else {
+        error_log('Bot Gagal (CI tidak terinisialisasi): ' . $e->getMessage());
     }
 }
 
-// Selalu kembalikan respon HTTP 200 OK ke Telegram.
+// Selalu kembalikan respon HTTP 200 OK ke Telegram untuk mencegah pengiriman ulang.
 http_response_code(200);
