@@ -57,7 +57,13 @@ class Settings extends CI_Controller {
             return;
         }
 
-        $webhookUrl = site_url('bot/index.php', 'https');
+        // Gunakan base_url untuk mendapatkan path yang benar tanpa index.php tambahan
+        $webhookUrl = base_url('bot/index.php');
+
+        // Pastikan URL menggunakan HTTPS
+        if (strpos($webhookUrl, 'http://') === 0) {
+            $webhookUrl = 'https' . substr($webhookUrl, 4);
+        }
 
         try {
             $client = new \GuzzleHttp\Client();

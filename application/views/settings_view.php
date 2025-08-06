@@ -55,7 +55,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
         <h2>Webhook</h2>
         <p>Webhook adalah mekanisme di mana Telegram akan mengirim pembaruan (seperti pesan baru) ke server Anda.</p>
-        <p>URL Webhook untuk bot Anda adalah: <code><?php echo site_url('bot/index.php', 'https'); ?></code></p>
+        <p>URL Webhook untuk bot Anda adalah: <code><?php echo base_url('bot/index.php'); ?></code></p>
         <p>Klik tombol di bawah ini untuk mengatur URL ini secara otomatis di server Telegram. Pastikan token bot sudah disimpan dengan benar.</p>
         <a href="<?php echo site_url('settings/set_webhook'); ?>" class="btn btn-primary">Set Webhook</a>
 
