@@ -11,15 +11,18 @@ class ApiClient
 {
     protected string $apiUrl;
     protected Client $httpClient;
+    protected Log_model $logger;
 
     /**
      * ApiClient constructor.
      * @param string $token Token bot dari Telegram.
+     * @param Log_model $logger Instance dari model log CodeIgniter.
      */
-    public function __construct(string $token)
+    public function __construct(string $token, Log_model $logger)
     {
         $this->apiUrl = 'https://api.telegram.org/bot' . $token;
         $this->httpClient = new Client(['base_uri' => $this->apiUrl]);
+        $this->logger = $logger;
     }
 
     /**
@@ -37,10 +40,13 @@ class ApiClient
                     'text' => $text,
                 ]
             ]);
+
+            // Catat pesan keluar yang berhasil
+            $this->logger->add_log('outgoing', "To: $chatId | Message: $text");
+
         } catch (GuzzleException $e) {
-            // Dalam aplikasi nyata, ini harus dicatat (logged).
-            // Untuk saat ini, kita abaikan sesuai instruksi.
-            error_log('Guzzle Error: ' . $e->getMessage());
+            // Catat error ke database jika pengiriman gagal
+            $this->logger->add_log('error', 'Guzzle Error: ' . $e->getMessage());
         }
     }
 }
