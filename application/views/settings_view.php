@@ -66,6 +66,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
         <a href="<?php echo site_url('settings/get_webhook_info'); ?>" class="btn btn-secondary">Cek Info Webhook</a>
         <a href="<?php echo site_url('settings/delete_webhook'); ?>" class="btn btn-action" onclick="return confirm('Anda yakin ingin menghapus webhook?');">Hapus Webhook</a>
 
+        <?php if (!empty($bot_token)): ?>
+            <p style="margin-top: 10px;">Atau, Anda dapat <a href="https://api.telegram.org/bot<?php echo htmlspecialchars($bot_token); ?>/getWebhookInfo" target="_blank" rel="noopener noreferrer">memeriksa langsung dari API Telegram</a> (membuka tab baru).</p>
+        <?php endif; ?>
+
         <?php if (!empty($webhook_info)): ?>
         <div style="margin-top: 20px;">
             <h3>Informasi Webhook Saat Ini:</h3>
