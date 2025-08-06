@@ -11,27 +11,35 @@ Ini adalah proyek dasar untuk bot PHP yang dirancang agar modular dan mudah di-h
 
 ---
 
-## Dasbor Log yang Ditingkatkan
+## Dasbor Log yang Ditingkatkan: Fitur Lengkap
 
-Dasbor log telah dirubah total untuk memberikan wawasan dan kontrol yang mendalam atas aktivitas bot.
+Dasbor log telah dirubah total untuk memberikan wawasan dan kontrol yang mendalam atas aktivitas bot. Berikut adalah rincian lengkap dari fitur-fiturnya:
 
-### Fitur Dasbor
+### Detail Fitur Dasbor yang Ditingkatkan
 
-*   **Dasbor Statistik**: Kartu di bagian atas menampilkan statistik penting:
-    *   **Total Log**: Jumlah total catatan log dalam database.
-    *   **Log (24 Jam)**: Jumlah log yang dibuat dalam 24 jam terakhir.
-    *   **Jumlah Berdasarkan Jenis**: Perincian log berdasarkan jenis (`incoming`, `outgoing`, `error`).
-*   **Pemfilteran & Pencarian Lanjutan**: Anda dapat memfilter log secara dinamis berdasarkan:
-    *   **Tipe Log**: Pilih dari menu dropdown.
-    *   **ID Obrolan**: Filter berdasarkan ID obrolan yang tepat.
-    *   **Nama Obrolan**: Cari berdasarkan nama pengguna atau judul grup (mendukung pencocokan sebagian).
-    *   **Kata Kunci**: Cari teks tertentu di dalam pesan log.
-*   **Paginasi**: Untuk menangani volume log yang besar secara efisien, dasbor secara otomatis memberi nomor halaman pada hasil, memastikan waktu muat yang cepat.
-*   **Manajemen Log**:
-    *   **Hapus Log Individual**: Setiap entri log memiliki tombol **Hapus** dengan dialog konfirmasi.
-    *   **Hapus Semua Log**: Tombol **Hapus Semua** memungkinkan Anda untuk membersihkan seluruh riwayat log. Tindakan ini memerlukan konfirmasi untuk mencegah penghapusan yang tidak disengaja.
-*   **Antarmuka Pengguna Modern**: UI telah didesain ulang sepenuhnya menggunakan **Bootstrap 5** untuk memberikan pengalaman yang bersih, modern, dan responsif di semua perangkat.
-*   **Pesan JSON yang Diformat**: Jika pesan log adalah string JSON (seperti pembaruan mentah dari API bot), dasbor akan secara otomatis memformatnya agar mudah dibaca.
+*   **Panel Statistik Real-time:**
+    *   **Total Log Tercatat:** Agregasi dari semua log yang pernah disimpan.
+    *   **Aktivitas 24 Jam Terakhir:** Hitungan log yang masuk dalam 24 jam terakhir untuk memantau aktivitas terkini.
+    *   **Analisis Tipe Log:** Rincian kuantitatif untuk setiap tipe log (`incoming`, `outgoing`, `error`) untuk identifikasi cepat tren atau masalah.
+
+*   **Sistem Pemfilteran Multi-dimensi:**
+    *   **Filter berdasarkan Tipe Log:** Dropdown untuk mengisolasi log berdasarkan kategorinya.
+    *   **Filter berdasarkan ID Obrolan Pengguna/Grup:** Input teks untuk melacak interaksi dengan pengguna atau grup tertentu.
+    *   **Pencarian Nama Obrolan:** Cari berdasarkan nama pengguna (misalnya, "John Doe") atau nama grup (misalnya, "Proyek Tim") dengan pencocokan parsial.
+    *   **Pencarian Kata Kunci dalam Pesan:** Pencarian teks lengkap di dalam konten pesan log untuk menemukan interaksi atau kesalahan tertentu.
+
+*   **Manajemen Data & Kinerja:**
+    *   **Paginasi Cerdas:** Secara otomatis membagi kumpulan data log yang besar menjadi halaman-halaman untuk mencegah kelambatan dan memastikan UI tetap responsif.
+    *   **Tombol Reset Filter:** Tombol sekali klik untuk menghapus semua kriteria filter dan kembali ke tampilan default.
+
+*   **Kontrol Manajemen Log:**
+    *   **Penghapusan Log Individual:** Setiap baris log memiliki tombol "Hapus" dengan dialog konfirmasi (`"Yakin ingin menghapus log ini?"`) untuk mencegah penghapusan yang tidak disengaja.
+    *   **Pembersihan Seluruh Log:** Tombol "Hapus Semua" yang ditempatkan secara mencolok untuk menghapus *semua* data log dari tabel. Tindakan ini dilindungi oleh dialog konfirmasi yang lebih tegas.
+
+*   **Peningkatan Antarmuka Pengguna (UI/UX):**
+    *   **Desain Responsif dengan Bootstrap 5:** Tampilan dan nuansa modern yang beradaptasi dengan mulus ke desktop, tablet, dan perangkat seluler.
+    *   **Indikator Visual (Badge):** Tipe log ditandai dengan lencana berkode warna (hijau untuk `incoming`, biru untuk `outgoing`, merah untuk `error`) untuk pemindaian visual yang cepat.
+    *   **Pretty-Printing JSON:** Pesan log yang berisi data JSON secara otomatis diformat dengan indentasi dan penyorotan sintaks untuk keterbacaan maksimal, sangat berguna untuk debugging payload API.
 
 ---
 
