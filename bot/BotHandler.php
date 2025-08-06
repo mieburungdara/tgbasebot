@@ -7,14 +7,17 @@
 class BotHandler
 {
     protected ApiClient $api;
+    protected Log_model $logger;
 
     /**
      * BotHandler constructor.
      * @param ApiClient $api Klien API untuk mengirim balasan.
+     * @param Log_model $logger Instance dari model log CodeIgniter.
      */
-    public function __construct(ApiClient $api)
+    public function __construct(ApiClient $api, Log_model $logger)
     {
         $this->api = $api;
+        $this->logger = $logger;
     }
 
     /**
@@ -23,10 +26,13 @@ class BotHandler
      */
     public function handle(string $rawUpdate): void
     {
+        // Catat setiap pembaruan mentah yang masuk
+        $this->logger->add_log('incoming', $rawUpdate);
+
         $update = json_decode($rawUpdate, true);
 
         if (!$update) {
-            // Abaikan jika data tidak valid
+            $this->logger->add_log('error', 'Pembaruan masuk tidak valid atau bukan JSON.');
             return;
         }
 

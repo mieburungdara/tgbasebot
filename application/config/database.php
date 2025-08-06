@@ -75,11 +75,11 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => '',
-	'password' => '',
-	'database' => '',
-	'dbdriver' => 'mysqli',
+	'hostname' => '', // Tidak digunakan untuk SQLite
+	'username' => '', // Tidak digunakan untuk SQLite
+	'password' => '', // Tidak digunakan untuk SQLite
+	'database' => APPPATH . 'database/bot.db', // Path ke file database SQLite
+	'dbdriver' => 'sqlite3',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
 	'db_debug' => (ENVIRONMENT !== 'production'),

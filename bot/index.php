@@ -1,49 +1,57 @@
 <?php
+// Definisikan path dasar CodeIgniter
+define('BASEPATH', __DIR__ . '/../system/');
+define('APPPATH', __DIR__ . '/../application/');
+define('ENVIRONMENT', $_ENV['CI_ENV'] ?? 'production');
 
-// Atur zona waktu default untuk menghindari potensi error tanggal/waktu.
-date_default_timezone_set('Asia/Jakarta');
+// Ubah direktori kerja ke direktori root proyek
+chdir(__DIR__ . '/..');
 
-// Aktifkan logging error ke file, penting untuk debugging di shared hosting.
-ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/error.log');
-ini_set('display_errors', 0); // Jangan tampilkan error ke pengguna
+// Muat bootstrap CodeIgniter
+require_once BASEPATH . 'core/CodeIgniter.php';
 
-// Muat autoloader Composer dari direktori root.
-require_once __DIR__ . '/../vendor/autoload.php';
+/*
+ * --------------------------------------------------------------------
+ * PROSES PERMINTAAN BOT
+ * --------------------------------------------------------------------
+ */
+
+// Dapatkan instance CodeIgniter
+$CI =& get_instance();
+
+// Muat model yang diperlukan
+$CI->load->model('Settings_model');
+$CI->load->model('Log_model');
 
 // Muat file-file bot yang modular
-require_once __DIR__ . '/ApiClient.php';
-require_once __DIR__ . '/BotHandler.php';
+require_once APPPATH . '../bot/ApiClient.php';
+require_once APPPATH . '../bot/BotHandler.php';
 
 try {
-    // Muat variabel lingkungan dari file .env di direktori root
-    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
-    $dotenv->load();
-
-    // Ambil token bot dari environment variable
-    $botToken = $_ENV['TELEGRAM_BOT_TOKEN'] ?? null;
+    // Ambil token bot dari database
+    $botToken = $CI->Settings_model->get_setting('bot_token');
     if (empty($botToken)) {
-        throw new Exception('TELEGRAM_BOT_TOKEN tidak diatur di file .env.');
+        throw new Exception('Token bot tidak ditemukan di database pengaturan.');
     }
 
-    // Inisialisasi komponen-komponen bot
-    $apiClient = new ApiClient($botToken);
-    $botHandler = new BotHandler($apiClient);
+    // Inisialisasi komponen bot dengan model log
+    $apiClient = new ApiClient($botToken, $CI->Log_model);
+    $botHandler = new BotHandler($apiClient, $CI->Log_model);
 
-    // Ambil pembaruan mentah dari input stream (data yang dikirim Telegram)
-    $update = file_get_contents('php://input');
+    // Ambil pembaruan mentah dari input stream
+    $rawUpdate = file_get_contents('php://input');
 
     // Pastikan ada pembaruan sebelum diproses
-    if ($update) {
-        $botHandler->handle($update);
+    if (!empty($rawUpdate)) {
+        $botHandler->handle($rawUpdate);
     }
 
 } catch (Exception $e) {
-    // Jika terjadi error, catat pesannya ke file log.
-    error_log('Error: ' . $e->getMessage());
+    // Jika terjadi error, catat pesannya menggunakan Log_model
+    if (isset($CI->Log_model)) {
+        $CI->Log_model->add_log('error', 'Bot Gagal: ' . $e->getMessage());
+    }
 }
 
 // Selalu kembalikan respon HTTP 200 OK ke Telegram.
-// Ini memberitahu Telegram bahwa webhook telah menerima pembaruan dengan sukses.
-// Jika tidak, Telegram akan mencoba mengirim pembaruan yang sama berulang kali.
 http_response_code(200);
