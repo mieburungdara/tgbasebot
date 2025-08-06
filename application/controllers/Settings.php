@@ -11,7 +11,7 @@ class Settings extends CI_Controller {
         $this->load->helper('url');
         $this->load->helper('form');
         $this->load->library('session');
-        require_once APPPATH . 'bot/ApiClient.php'; // Include the ApiClient
+        require_once dirname(APPPATH) . '/bot/ApiClient.php'; // Correct path to ApiClient
     }
 
     public function index()
