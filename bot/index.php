@@ -1,7 +1,4 @@
 <?php
-// Aktifkan pelaporan error untuk debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 // Definisikan path absolut yang kokoh untuk menghindari masalah lingkungan
 $root_path = realpath(__DIR__ . '/..');
@@ -9,6 +6,7 @@ $root_path = realpath(__DIR__ . '/..');
 define('FCPATH', $root_path . '/');
 define('BASEPATH', FCPATH . 'system/');
 define('APPPATH', FCPATH . 'application/');
+define('VIEWPATH', APPPATH . 'views/'); // Tambahkan definisi VIEWPATH
 define('ENVIRONMENT', $_ENV['CI_ENV'] ?? 'production');
 
 // Ubah direktori kerja ke direktori root proyek
