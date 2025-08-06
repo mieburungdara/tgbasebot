@@ -65,20 +65,13 @@ class Settings extends CI_Controller {
             $webhookUrl = 'https' . substr($webhookUrl, 4);
         }
 
-        try {
-            $client = new \GuzzleHttp\Client();
-            $response = $client->post('https://api.telegram.org/bot' . $token . '/setWebhook', [
-                'form_params' => ['url' => $webhookUrl]
-            ]);
-            $body = json_decode((string) $response->getBody(), true);
-
-            if ($response->getStatusCode() == 200 && ($body['ok'] ?? false)) {
+        if ($api = $this->_get_api_client()) {
+            $result = $api->setWebhook($webhookUrl);
+            if ($result && ($result['ok'] ?? false)) {
                 $this->session->set_flashdata('success_message', 'Webhook berhasil diatur ke: ' . $webhookUrl);
             } else {
-                $this->session->set_flashdata('error_message', 'Gagal mengatur webhook. Respon: ' . ($body['description'] ?? 'Unknown error.'));
+                $this->session->set_flashdata('error_message', 'Gagal mengatur webhook. Respon: ' . ($result['description'] ?? 'Tidak ada atau error.'));
             }
-        } catch (\GuzzleHttp\Exception\GuzzleException $e) {
-            $this->session->set_flashdata('error_message', 'Error menghubungi API Telegram: ' . $e->getMessage());
         }
 
         redirect('settings');
