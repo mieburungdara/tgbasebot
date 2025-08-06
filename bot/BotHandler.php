@@ -26,19 +26,31 @@ class BotHandler
      */
     public function handle(string $rawUpdate): void
     {
-        // Catat setiap pembaruan mentah yang masuk
-        $this->logger->add_log('incoming', $rawUpdate);
-
         $update = json_decode($rawUpdate, true);
 
+        // Ekstrak info obrolan jika memungkinkan
+        $chatId = $update['message']['chat']['id'] ?? null;
+        $chatName = null;
+        if (isset($update['message']['chat'])) {
+            $chat = $update['message']['chat'];
+            if (isset($chat['title'])) {
+                $chatName = $chat['title']; // Untuk grup
+            } else {
+                $chatName = trim(($chat['first_name'] ?? '') . ' ' . ($chat['last_name'] ?? ''));
+            }
+        }
+
+        // Catat setiap pembaruan mentah yang masuk dengan info obrolan
+        $this->logger->add_log('incoming', $rawUpdate, $chatId, $chatName);
+
         if (!$update) {
+            // Jika pembaruan tidak valid, log kesalahan (info obrolan akan null)
             $this->logger->add_log('error', 'Pembaruan masuk tidak valid atau bukan JSON.');
             return;
         }
 
         if (isset($update['message'])) {
             $message = $update['message'];
-            $chatId = $message['chat']['id'];
             $text = $message['text'] ?? ''; // Gunakan null coalescing untuk menghindari error jika tidak ada teks
 
             if ($text === '/start') {

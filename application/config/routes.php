@@ -57,3 +57,7 @@ $route['translate_uri_dashes'] = FALSE;
 $route['dashboard'] = 'dashboard';
 $route['settings'] = 'settings';
 $route['migrate'] = 'migrate';
+
+// Rute untuk aksi dasbor
+$route['dashboard/delete/(:num)'] = 'dashboard/delete/$1';
+$route['dashboard/clear_logs'] = 'dashboard/clear_logs';
