@@ -56,3 +56,4 @@ $route['translate_uri_dashes'] = FALSE;
 // Rute kustom untuk dasbor dan pengaturan
 $route['dashboard'] = 'dashboard';
 $route['settings'] = 'settings';
+$route['migrate'] = 'migrate';
