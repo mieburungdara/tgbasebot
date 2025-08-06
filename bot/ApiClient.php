@@ -61,7 +61,7 @@ class ApiClient
     public function getWebhookInfo(): ?array
     {
         try {
-            $response = $this->httpClient->get('getWebhookInfo');
+            $response = $this->httpClient->post('getWebhookInfo'); // Ubah ke POST
             $body = json_decode((string) $response->getBody(), true);
 
             if ($response->getStatusCode() == 200 && ($body['ok'] ?? false)) {
@@ -85,7 +85,7 @@ class ApiClient
     public function deleteWebhook(): ?array
     {
         try {
-            $response = $this->httpClient->get('deleteWebhook');
+            $response = $this->httpClient->post('deleteWebhook'); // Ubah ke POST
             $body = json_decode((string) $response->getBody(), true);
 
             if ($response->getStatusCode() == 200 && ($body['ok'] ?? false)) {
