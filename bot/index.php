@@ -7,6 +7,9 @@ define('ENVIRONMENT', $_ENV['CI_ENV'] ?? 'production');
 // Ubah direktori kerja ke direktori root proyek
 chdir(__DIR__ . '/..');
 
+// Muat autoloader Composer
+require_once 'vendor/autoload.php';
+
 // Muat bootstrap CodeIgniter
 require_once BASEPATH . 'core/CodeIgniter.php';
 
