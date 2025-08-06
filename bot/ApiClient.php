@@ -21,7 +21,10 @@ class ApiClient
     public function __construct(string $token, Log_model $logger)
     {
         $this->apiUrl = 'https://api.telegram.org/bot' . $token;
-        $this->httpClient = new Client(['base_uri' => $this->apiUrl]);
+        $this->httpClient = new Client([
+            'base_uri' => $this->apiUrl,
+            'verify' => false, // Nonaktifkan verifikasi SSL
+        ]);
         $this->logger = $logger;
     }
 
