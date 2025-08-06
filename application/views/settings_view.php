@@ -55,9 +55,23 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
         <h2>Webhook</h2>
         <p>Webhook adalah mekanisme di mana Telegram akan mengirim pembaruan (seperti pesan baru) ke server Anda.</p>
-        <p>URL Webhook untuk bot Anda adalah: <code><?php echo site_url('bot/index.php'); ?></code></p>
+        <p>URL Webhook untuk bot Anda adalah: <code><?php echo site_url('bot/index.php', 'https'); ?></code></p>
         <p>Klik tombol di bawah ini untuk mengatur URL ini secara otomatis di server Telegram. Pastikan token bot sudah disimpan dengan benar.</p>
-        <a href="<?php echo site_url('settings/set_webhook'); ?>" class="btn btn-action">Set Webhook via Telegram API</a>
+        <a href="<?php echo site_url('settings/set_webhook'); ?>" class="btn btn-primary">Set Webhook</a>
+
+        <hr style="margin: 20px 0;">
+
+        <h2>Manajemen Webhook</h2>
+        <p>Gunakan tombol di bawah untuk memeriksa atau menghapus konfigurasi webhook Anda saat ini.</p>
+        <a href="<?php echo site_url('settings/get_webhook_info'); ?>" class="btn btn-secondary">Cek Info Webhook</a>
+        <a href="<?php echo site_url('settings/delete_webhook'); ?>" class="btn btn-action" onclick="return confirm('Anda yakin ingin menghapus webhook?');">Hapus Webhook</a>
+
+        <?php if (!empty($webhook_info)): ?>
+        <div style="margin-top: 20px;">
+            <h3>Informasi Webhook Saat Ini:</h3>
+            <pre style="background-color: #f9f9f9; border: 1px solid #D0D0D0; padding: 10px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word;"><code><?php echo htmlspecialchars(json_encode($webhook_info, JSON_PRETTY_PRINT)); ?></code></pre>
+        </div>
+        <?php endif; ?>
 	</div>
 </div>
 

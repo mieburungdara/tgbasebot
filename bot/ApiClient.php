@@ -49,4 +49,52 @@ class ApiClient
             $this->logger->add_log('error', 'Guzzle Error: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Mendapatkan informasi webhook bot saat ini.
+     *
+     * @return array|null Informasi webhook atau null jika terjadi error.
+     */
+    public function getWebhookInfo(): ?array
+    {
+        try {
+            $response = $this->httpClient->get('getWebhookInfo');
+            $body = json_decode((string) $response->getBody(), true);
+
+            if ($response->getStatusCode() == 200 && ($body['ok'] ?? false)) {
+                return $body; // Return the full response
+            }
+
+            $this->logger->add_log('error', 'Failed to get webhook info: ' . ($body['description'] ?? 'Unknown error'));
+            return null;
+
+        } catch (GuzzleException $e) {
+            $this->logger->add_log('error', 'Guzzle Error (getWebhookInfo): ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Menghapus webhook bot.
+     *
+     * @return array|null Hasil dari operasi atau null jika terjadi error.
+     */
+    public function deleteWebhook(): ?array
+    {
+        try {
+            $response = $this->httpClient->get('deleteWebhook');
+            $body = json_decode((string) $response->getBody(), true);
+
+            if ($response->getStatusCode() == 200 && ($body['ok'] ?? false)) {
+                return $body;
+            }
+
+            $this->logger->add_log('error', 'Failed to delete webhook: ' . ($body['description'] ?? 'Unknown error'));
+            return null;
+
+        } catch (GuzzleException $e) {
+            $this->logger->add_log('error', 'Guzzle Error (deleteWebhook): ' . $e->getMessage());
+            return null;
+        }
+    }
 }
