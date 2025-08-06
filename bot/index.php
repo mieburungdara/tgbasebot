@@ -1,4 +1,7 @@
 <?php
+// Aktifkan pelaporan error untuk debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Definisikan path absolut yang kokoh untuk menghindari masalah lingkungan
 $root_path = realpath(__DIR__ . '/..');
