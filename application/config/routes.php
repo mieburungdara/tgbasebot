@@ -70,7 +70,7 @@ $route['dashboard/broadcast'] = 'dashboard/broadcast';
 $route['dashboard/send_broadcast'] = 'dashboard/send_broadcast';
 
 // Rute untuk Manajemen Pengguna
-$route['user_management'] = 'user_management';
-$route['user_management/index'] = 'user_management/index';
-$route['user_management/edit/(:num)'] = 'user_management/edit/$1';
-$route['user_management/update/(:num)'] = 'user_management/update/$1';
+$route['user_management'] = 'UserManagement';
+$route['user_management/index'] = 'UserManagement/index';
+$route['user_management/edit/(:num)'] = 'UserManagement/edit/$1';
+$route['user_management/update/(:num)'] = 'UserManagement/update/$1';
