@@ -17,7 +17,8 @@ class Migration_Create_broadcasts_table extends CI_Migration {
                 'null' => FALSE
             ),
             'status' => array(
-                'type' => "ENUM('pending', 'processing', 'completed', 'failed')",
+                'type' => 'TEXT',
+                'constraint' => 20,
                 'default' => 'pending',
                 'null' => FALSE
             ),
