@@ -31,6 +31,8 @@ try {
     // Muat model yang diperlukan
     $CI->load->model('Settings_model');
     $CI->load->model('Log_model');
+    $CI->load->model('UserModel');
+    $CI->load->model('KeywordModel');
 
     // Muat file-file bot yang modular
     require_once FCPATH . 'bot/ApiClient.php';
@@ -42,9 +44,9 @@ try {
         throw new Exception('Token bot tidak ditemukan di database pengaturan.');
     }
 
-    // Inisialisasi komponen bot dengan model log
+    // Inisialisasi komponen bot dengan semua model yang diperlukan
     $apiClient = new ApiClient($botToken, $CI->Log_model);
-    $botHandler = new BotHandler($apiClient, $CI->Log_model);
+    $botHandler = new BotHandler($apiClient, $CI->Log_model, $CI->UserModel, $CI->KeywordModel);
 
     // Ambil pembaruan mentah dari input stream
     $rawUpdate = file_get_contents('php://input');

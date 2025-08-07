@@ -34,14 +34,23 @@
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
-            <a class="navbar-brand" href="#">Log Bot</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="<?= site_url('welcome') ?>">Home</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="<?= site_url('dashboard') ?>">Log Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?= site_url('settings') ?>">Pengaturan</a></li>
+            <a class="navbar-brand" href="<?= site_url('dashboard') ?>"><i class="bi bi-robot"></i> Bot Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="<?= site_url('dashboard') ?>">Logs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?= site_url('dashboard/keywords') ?>">Keywords</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?= site_url('dashboard/broadcast') ?>">Broadcast</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -49,6 +58,16 @@
 
     <div class="container mt-4">
         <h1 class="mb-4">Dasbor Log Bot</h1>
+
+        <!-- Bagian Grafik Aktivitas -->
+        <div class="card mb-4">
+            <div class="card-header">
+                Aktivitas Log (14 Hari Terakhir)
+            </div>
+            <div class="card-body" style="height: 250px;">
+                <canvas id="activityChart"></canvas>
+            </div>
+        </div>
 
         <!-- Bagian Statistik -->
         <div class="row">
@@ -191,5 +210,45 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('activityChart');
+        if (ctx) {
+            new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: <?= $chart_labels ?>,
+                    datasets: [{
+                        label: 'Total Logs',
+                        data: <?= $chart_values ?>,
+                        fill: true,
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        tension: 0.3,
+                        pointBackgroundColor: 'rgba(0, 123, 255, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                // Pastikan hanya integer yang ditampilkan di sumbu Y
+                                stepSize: 1,
+                                callback: function(value) {if (Math.floor(value) === value) {return value;}}
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 </html>

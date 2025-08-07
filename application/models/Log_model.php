@@ -123,4 +123,34 @@ class Log_model extends CI_Model {
     {
         return $this->db->truncate('bot_logs');
     }
+
+    /**
+     * Mengambil jumlah log harian selama N hari terakhir.
+     *
+     * @param int $days Jumlah hari untuk dilihat kembali.
+     * @return array
+     */
+    public function get_daily_log_counts($days = 7)
+    {
+        $this->db->select('DATE(created_at) as date, COUNT(id) as count');
+        $this->db->where('created_at >=', date('Y-m-d H:i:s', strtotime("-$days days")));
+        $this->db->group_by('DATE(created_at)');
+        $this->db->order_by('date', 'ASC');
+        $query = $this->db->get('bot_logs');
+        $results = $query->result_array();
+
+        // Buat rentang tanggal untuk memastikan semua hari ada, bahkan yang memiliki 0 log
+        $date_range = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime("-$i days"));
+            $date_range[$date] = 0;
+        }
+
+        // Isi jumlah dari hasil kueri
+        foreach ($results as $row) {
+            $date_range[$row['date']] = (int)$row['count'];
+        }
+
+        return $date_range;
+    }
 }

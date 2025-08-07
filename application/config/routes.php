@@ -61,3 +61,10 @@ $route['migrate'] = 'migrate';
 // Rute untuk aksi dasbor
 $route['dashboard/delete/(:num)'] = 'dashboard/delete/$1';
 $route['dashboard/clear_logs'] = 'dashboard/clear_logs';
+
+// Rute untuk fitur-fitur baru dasbor
+$route['dashboard/keywords'] = 'dashboard/keywords';
+$route['dashboard/add_keyword'] = 'dashboard/add_keyword';
+$route['dashboard/delete_keyword/(:num)'] = 'dashboard/delete_keyword/$1';
+$route['dashboard/broadcast'] = 'dashboard/broadcast';
+$route['dashboard/send_broadcast'] = 'dashboard/send_broadcast';
