@@ -69,7 +69,37 @@
             </div>
         </div>
 
-        <!-- Bagian Statistik -->
+        <!-- Bagian Statistik Pengguna -->
+        <h2 class="h4 mb-3">Statistik Pengguna</h2>
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="card text-white bg-success mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-person-check-fill"></i> Pengguna Aktif</h5>
+                        <p class="card-text fs-4"><?= number_format($user_stats['active_users'] ?? 0) ?></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card text-white bg-danger mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-person-x-fill"></i> Pengguna Diblokir</h5>
+                        <p class="card-text fs-4"><?= number_format($user_stats['banned_users'] ?? 0) ?></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card text-white bg-secondary mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-people-fill"></i> Total Pengguna</h5>
+                        <p class="card-text fs-4"><?= number_format($user_stats['total_users'] ?? 0) ?></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="h4 mb-3">Statistik Log</h2>
+        <!-- Bagian Statistik Log -->
         <div class="row">
             <div class="col-md-3">
                 <div class="card text-white bg-primary">

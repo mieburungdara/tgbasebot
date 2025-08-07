@@ -32,9 +32,41 @@ class UserModel extends CI_Model {
     /**
      * Get all users for broadcasting.
      * @return array
+     * @deprecated Use getActiveUsersBatch for new broadcast system
      */
     public function getAllUsers() {
+        $this->db->where('status', 'active');
         $query = $this->db->get('users');
         return $query->result_array();
+    }
+
+    /**
+     * Get a batch of active users for processing.
+     */
+    public function getActiveUsersBatch($limit, $offset) {
+        $this->db->where('status', 'active');
+        $this->db->order_by('id', 'ASC');
+        $this->db->limit($limit, $offset);
+        $query = $this->db->get('users');
+        return $query->result_array();
+    }
+
+    /**
+     * Mark a user as banned.
+     */
+    public function markUserAsBanned($chat_id) {
+        $this->db->where('chat_id', $chat_id);
+        return $this->db->update('users', ['status' => 'banned']);
+    }
+
+    /**
+     * Get statistics about users (active vs banned).
+     */
+    public function getUserStats() {
+        $this->db->select("COUNT(id) as total_users");
+        $this->db->select("COUNT(CASE WHEN status = 'active' THEN 1 END) as active_users");
+        $this->db->select("COUNT(CASE WHEN status = 'banned' THEN 1 END) as banned_users");
+        $query = $this->db->get('users');
+        return $query->row_array();
     }
 }
