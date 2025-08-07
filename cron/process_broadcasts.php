@@ -73,9 +73,14 @@ try {
         echo "Marked job #{$broadcast['id']} as processing.\n";
     }
 
-    // Get the next batch of users
+    // Get the next batch of users based on targeting
     $offset = (int)$broadcast['sent_count'] + (int)$broadcast['failed_count'];
-    $users = $CI->UserModel->getActiveUsersBatch($batch_size, $offset);
+    $users = $CI->UserModel->getActiveUsersBatch(
+        $batch_size,
+        $offset,
+        $broadcast['target_tag'],
+        $broadcast['is_test_broadcast']
+    );
 
     if (empty($users)) {
         // No more users to process, mark as complete
@@ -99,7 +104,12 @@ try {
             $errorMessage = $e->getMessage();
             echo " -> Failed for {$user['chat_id']}: {$errorMessage}\n";
 
-            // Check if the user blocked the bot (adjust string check as needed for Guzzle exceptions)
+            // Log the specific error to the main log table and the broadcast job
+            $log_message = "Broadcast #{$broadcast['id']} to user {$user['chat_id']} failed: " . $errorMessage;
+            $CI->Log_model->add_log('error', $log_message, $user['chat_id']);
+            $CI->BroadcastModel->update_error_message($broadcast['id'], $log_message);
+
+            // Check if the user blocked the bot
             if (stripos($errorMessage, 'forbidden') !== false && stripos($errorMessage, 'bot was blocked') !== false) {
                 $CI->UserModel->markUserAsBanned($user['chat_id']);
                 echo " --> User {$user['chat_id']} marked as banned.\n";

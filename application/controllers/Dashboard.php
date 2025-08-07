@@ -135,13 +135,16 @@ class Dashboard extends CI_Controller {
      */
     public function broadcast()
     {
+        $filters = ['status' => $this->input->get('status')];
+        $filters = array_filter($filters);
+
         // Konfigurasi Paginasi untuk riwayat siaran
         $config['base_url'] = site_url('dashboard/broadcast');
-        $config['total_rows'] = $this->BroadcastModel->count_all_broadcasts();
+        $config['total_rows'] = $this->BroadcastModel->count_all_broadcasts($filters);
         $config['per_page'] = 15;
         $config['page_query_string'] = TRUE;
         $config['query_string_segment'] = 'page';
-        $config['reuse_query_string'] = TRUE; // Penting agar filter tetap ada saat paginasi
+        $config['reuse_query_string'] = TRUE;
         $config['full_tag_open'] = '<nav><ul class="pagination justify-content-center">';
         $config['full_tag_close'] = '</ul></nav>';
         $config['first_link'] = 'Awal';
@@ -157,20 +160,27 @@ class Dashboard extends CI_Controller {
         $config['prev_tag_open'] = '<li class="page-item"><span class="page-link">';
         $config['prev_tag_close'] = '</span></li>';
 
+        if (!empty($filters)) {
+            $config['suffix'] = '&' . http_build_query($filters, '', "&");
+            $config['first_url'] = $config['base_url'] . '?' . http_build_query($filters, '', "&");
+        }
+
         $this->pagination->initialize($config);
 
         $page = $this->input->get('page') ? (int)$this->input->get('page') : 0;
         $offset = $page;
 
-        $data['broadcasts'] = $this->BroadcastModel->get_all_broadcasts($config['per_page'], $offset);
+        $data['broadcasts'] = $this->BroadcastModel->get_all_broadcasts($filters, $config['per_page'], $offset);
         $data['pagination_links'] = $this->pagination->create_links();
         $data['user_stats'] = $this->UserModel->getUserStats();
+        $data['tags'] = $this->UserModel->getAllTags();
+        $data['filters'] = $filters;
 
         $this->load->view('broadcast_view', $data);
     }
 
     /**
-     * Menambahkan siaran baru ke dalam antrean.
+     * Menambahkan siaran baru ke dalam antrean dengan opsi penargetan.
      */
     public function send_broadcast()
     {
@@ -178,18 +188,28 @@ class Dashboard extends CI_Controller {
         $this->form_validation->set_rules('message', 'Message', 'required');
 
         if ($this->form_validation->run() == FALSE) {
-            // Jika validasi gagal, muat ulang halaman dengan error
-            $this->broadcast();
-        } else {
-            $message = $this->input->post('message');
-            $user_stats = $this->UserModel->getUserStats();
-            $active_users_count = $user_stats['active_users'];
-
-            if ($active_users_count > 0) {
-                $this->BroadcastModel->create_broadcast($message, $active_users_count);
-            }
-
-            redirect('dashboard/broadcast');
+            return $this->broadcast();
         }
+
+        $is_test_send = !empty($this->input->post('test_send'));
+        $target_tag = $this->input->post('target_tag');
+        if (empty($target_tag) || $target_tag === 'all') {
+            $target_tag = NULL;
+        }
+
+        // Hitung jumlah penerima berdasarkan target
+        $recipient_count = $this->UserModel->countActiveUsers($target_tag, $is_test_send);
+
+        if ($recipient_count > 0) {
+            $broadcast_data = [
+                'message' => $this->input->post('message'),
+                'total_recipients' => $recipient_count,
+                'target_tag' => $target_tag,
+                'is_test_broadcast' => $is_test_send ? 1 : 0,
+            ];
+            $this->BroadcastModel->create_broadcast($broadcast_data);
+        }
+
+        redirect('dashboard/broadcast');
     }
 }

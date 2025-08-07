@@ -9,15 +9,18 @@ class BroadcastModel extends CI_Model {
     }
 
     /**
-     * Membuat entri siaran baru.
+     * Membuat entri siaran baru dengan opsi penargetan.
+     * @param array $data Data siaran, termasuk 'message', 'total_recipients', dan opsional 'target_tag', 'is_test_broadcast'
      */
-    public function create_broadcast($message, $total_recipients) {
-        $data = [
-            'message' => $message,
-            'total_recipients' => $total_recipients,
+    public function create_broadcast($data) {
+        $defaults = [
             'status' => 'pending',
-            'created_at' => date('Y-m-d H:i:s')
+            'created_at' => date('Y-m-d H:i:s'),
+            'is_test_broadcast' => 0,
+            'target_tag' => NULL
         ];
+        $data = array_merge($defaults, $data);
+
         $this->db->insert('broadcasts', $data);
         return $this->db->insert_id();
     }
@@ -77,9 +80,20 @@ class BroadcastModel extends CI_Model {
     }
 
     /**
-     * Mengambil semua siaran untuk ditampilkan di dasbor.
+     * Menerapkan filter pada query siaran.
      */
-    public function get_all_broadcasts($limit = 25, $offset = 0) {
+    private function _apply_broadcast_filters($filters = [])
+    {
+        if (!empty($filters['status'])) {
+            $this->db->where('status', $filters['status']);
+        }
+    }
+
+    /**
+     * Mengambil semua siaran untuk ditampilkan di dasbor, dengan filter dan paginasi.
+     */
+    public function get_all_broadcasts($filters = [], $limit = 25, $offset = 0) {
+        $this->_apply_broadcast_filters($filters);
         $this->db->order_by('created_at', 'DESC');
         $this->db->limit($limit, $offset);
         $query = $this->db->get('broadcasts');
@@ -87,9 +101,18 @@ class BroadcastModel extends CI_Model {
     }
 
     /**
-     * Menghitung total siaran.
+     * Menghitung total siaran, dengan filter.
      */
-    public function count_all_broadcasts() {
-        return $this->db->count_all('broadcasts');
+    public function count_all_broadcasts($filters = []) {
+        $this->_apply_broadcast_filters($filters);
+        return $this->db->count_all_results('broadcasts');
+    }
+
+    /**
+     * Memperbarui pesan error terakhir untuk sebuah siaran.
+     */
+    public function update_error_message($id, $message) {
+        $this->db->where('id', $id);
+        return $this->db->update('broadcasts', ['last_error_message' => $message]);
     }
 }

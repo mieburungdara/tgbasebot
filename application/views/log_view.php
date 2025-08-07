@@ -42,15 +42,10 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="<?= site_url('dashboard') ?>">Logs</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= site_url('dashboard/keywords') ?>">Keywords</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= site_url('dashboard/broadcast') ?>">Broadcast</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="<?= site_url('dashboard') ?>">Logs</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?= site_url('dashboard/keywords') ?>">Keywords</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?= site_url('dashboard/broadcast') ?>">Broadcast</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?= site_url('user_management') ?>">Users</a></li>
                 </ul>
             </div>
         </div>
