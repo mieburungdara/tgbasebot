@@ -139,6 +139,7 @@
                     <div class="col-md-3 d-flex justify-content-end">
                         <button type="submit" class="btn btn-primary me-2">Filter</button>
                         <a href="<?= site_url('dashboard') ?>" class="btn btn-secondary me-2">Reset</a>
+                        <a href="<?= site_url('migrate') ?>" class="btn btn-warning me-2" target="_blank" onclick="return confirm('Ini akan menjalankan migrasi database. Lanjutkan?')">Jalankan Migrasi</a>
                         <a href="<?= site_url('dashboard/clear_logs') ?>" class="btn btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus semua log? Tindakan ini tidak dapat diurungkan.')">Hapus Semua</a>
                     </div>
                 <?= form_close() ?>
