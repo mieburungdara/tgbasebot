@@ -68,3 +68,9 @@ $route['dashboard/add_keyword'] = 'dashboard/add_keyword';
 $route['dashboard/delete_keyword/(:num)'] = 'dashboard/delete_keyword/$1';
 $route['dashboard/broadcast'] = 'dashboard/broadcast';
 $route['dashboard/send_broadcast'] = 'dashboard/send_broadcast';
+
+// Rute untuk Manajemen Pengguna
+$route['user_management'] = 'user_management';
+$route['user_management/index'] = 'user_management/index';
+$route['user_management/edit/(:num)'] = 'user_management/edit/$1';
+$route['user_management/update/(:num)'] = 'user_management/update/$1';

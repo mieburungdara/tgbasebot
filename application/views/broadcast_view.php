@@ -23,15 +23,10 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= site_url('dashboard') ?>">Logs</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= site_url('dashboard/keywords') ?>">Keywords</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="<?= site_url('dashboard/broadcast') ?>">Broadcast</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="<?= site_url('dashboard') ?>">Logs</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?= site_url('dashboard/keywords') ?>">Keywords</a></li>
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="<?= site_url('dashboard/broadcast') ?>">Broadcast</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?= site_url('user_management') ?>">Users</a></li>
                 </ul>
             </div>
         </div>
@@ -47,22 +42,60 @@
                         <?= form_open('dashboard/send_broadcast') ?>
                             <div class="mb-3">
                                 <label for="message" class="form-label">Pesan Siaran</label>
-                                <textarea class="form-control" name="message" id="message" rows="10" required><?= set_value('message') ?></textarea>
+                                <textarea class="form-control" name="message" id="message" rows="8" required><?= set_value('message') ?></textarea>
                                 <?php if(form_error('message')): ?><div class="text-danger small mt-1"><?= form_error('message') ?></div><?php endif; ?>
                             </div>
-                            <div class="alert alert-info">
-                                <i class="bi bi-info-circle-fill"></i>
-                                Pesan akan ditambahkan ke antrean dan dikirim ke <strong><?= number_format($user_stats['active_users'] ?? 0) ?></strong> pengguna aktif.
+                            <div class="mb-3">
+                                <label for="target_tag" class="form-label">Target Segmen</label>
+                                <select name="target_tag" id="target_tag" class="form-select">
+                                    <option value="all" selected>Semua Pengguna Aktif</option>
+                                    <?php if (!empty($tags)): ?>
+                                        <?php foreach($tags as $tag): ?>
+                                            <option value="<?= html_escape($tag) ?>"><?= html_escape(ucfirst($tag)) ?></option>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </select>
+                                <div class="form-text">Pilih segmen pengguna untuk ditargetkan. Biarkan "Semua" untuk mengirim ke semua pengguna aktif.</div>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100" <?= (isset($user_stats['active_users']) && $user_stats['active_users'] == 0) ? 'disabled' : '' ?>>
-                                <i class="bi bi-send"></i> Tambahkan ke Antrean
-                            </button>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="queue_send" value="1" class="btn btn-primary" <?= (isset($user_stats['active_users']) && $user_stats['active_users'] == 0) ? 'disabled' : '' ?>>
+                                    <i class="bi bi-send"></i> Tambahkan ke Antrean
+                                </button>
+                                <button type="submit" name="test_send" value="1" class="btn btn-outline-secondary">
+                                    <i class="bi bi-person-check"></i> Kirim Tes (hanya ke pengguna tes)
+                                </button>
+                            </div>
                         <?= form_close() ?>
                     </div>
                 </div>
             </div>
             <div class="col-lg-8">
                 <h1 class="mb-4 h3">Riwayat Siaran</h1>
+
+                <!-- Filter Form -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Filter Riwayat</h5>
+                        <?= form_open('dashboard/broadcast', ['method' => 'get', 'class' => 'row g-3 align-items-center']) ?>
+                            <div class="col-md-4">
+                                <label for="status" class="visually-hidden">Status</label>
+                                <select name="status" id="status" class="form-select">
+                                    <option value="" <?= set_select('status', '') ?>>Semua Status</option>
+                                    <option value="pending" <?= set_select('status', 'pending', !empty($filters['status']) && $filters['status'] == 'pending') ?>>Pending</option>
+                                    <option value="processing" <?= set_select('status', 'processing', !empty($filters['status']) && $filters['status'] == 'processing') ?>>Processing</option>
+                                    <option value="completed" <?= set_select('status', 'completed', !empty($filters['status']) && $filters['status'] == 'completed') ?>>Completed</option>
+                                    <option value="failed" <?= set_select('status', 'failed', !empty($filters['status']) && $filters['status'] == 'failed') ?>>Failed</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                                <a href="<?= site_url('dashboard/broadcast') ?>" class="btn btn-secondary">Reset</a>
+                            </div>
+                        <?= form_close() ?>
+                    </div>
+                </div>
+
                 <div class="card">
                     <div class="card-header">Daftar Pekerjaan Siaran</div>
                     <div class="card-body">
