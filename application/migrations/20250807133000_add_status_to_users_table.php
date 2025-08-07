@@ -5,16 +5,19 @@ class Migration_Add_status_to_users_table extends CI_Migration {
 
     public function up()
     {
-        $fields = array(
-            'status' => array(
-                'type' => 'TEXT',
-                'constraint' => 20,
-                'default' => 'active',
-                'null' => FALSE
-            )
-        );
-        $this->dbforge->add_column('users', $fields);
-        $this->db->query('CREATE INDEX status_index ON users(status)');
+        if (!$this->db->field_exists('status', 'users'))
+        {
+            $fields = array(
+                'status' => array(
+                    'type' => 'TEXT',
+                    'constraint' => 20,
+                    'default' => 'active',
+                    'null' => FALSE
+                )
+            );
+            $this->dbforge->add_column('users', $fields);
+            $this->db->query('CREATE INDEX status_index ON users(status)');
+        }
     }
 
     public function down()
