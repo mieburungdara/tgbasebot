@@ -88,11 +88,21 @@ class BotHandler
 
         switch ($command) {
             case '/start':
-                $responseText = "Halo! Selamat datang di bot PHP modular.\n\nBerikut beberapa hal yang dapat saya lakukan:\n- Saya akan menggemakan pesan Anda kembali.\n- Coba kirim kata 'halo' atau 'info'.\n\nKetik /help untuk melihat daftar lengkap perintah.";
+                $responseText = "Halo! Selamat datang di bot PHP modular.\n\nKetik /help untuk melihat daftar perintah.";
                 break;
 
             case '/help':
-                $responseText = "Bantuan Bot:\n\n/start - Memulai bot dan menampilkan pesan selamat datang.\n/help - Menampilkan pesan bantuan ini.\n\nSelain perintah, saya dapat membalas kata kunci tertentu. Coba kirim 'info'!";
+                $responseText = "Bantuan Bot:\n\n/start - Memulai bot.\n/help - Menampilkan pesan bantuan ini.\n/subscribe - Mengaktifkan kembali langganan siaran.\n/unsubscribe - Berhenti berlangganan dari semua siaran.";
+                break;
+
+            case '/subscribe':
+                $this->userModel->setUserStatus($chatId, 'active');
+                $responseText = "Terima kasih! Anda telah kembali berlangganan dan akan menerima siaran berikutnya.";
+                break;
+
+            case '/unsubscribe':
+                $this->userModel->setUserStatus($chatId, 'unsubscribed');
+                $responseText = "Anda telah berhasil berhenti berlangganan dari pesan siaran. Anda tidak akan menerima siaran lagi kecuali Anda mengetik /subscribe.";
                 break;
 
             default:
