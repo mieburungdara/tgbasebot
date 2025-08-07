@@ -74,3 +74,9 @@ $route['user_management'] = 'UserManagement';
 $route['user_management/index'] = 'UserManagement/index';
 $route['user_management/edit/(:num)'] = 'UserManagement/edit/$1';
 $route['user_management/update/(:num)'] = 'UserManagement/update/$1';
+
+// Rute untuk aksi tambahan dasbor
+$route['dashboard/delete_broadcast/(:num)'] = 'dashboard/delete_broadcast/$1';
+
+// Rute untuk cron job
+$route['cron/run'] = 'cron/run';

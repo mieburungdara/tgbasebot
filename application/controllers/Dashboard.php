@@ -212,4 +212,16 @@ class Dashboard extends CI_Controller {
 
         redirect('dashboard/broadcast');
     }
+
+    /**
+     * Menghapus catatan siaran.
+     * @param int $id ID siaran.
+     */
+    public function delete_broadcast($id)
+    {
+        if ($id) {
+            $this->BroadcastModel->delete_broadcast($id);
+        }
+        redirect('dashboard/broadcast');
+    }
 }

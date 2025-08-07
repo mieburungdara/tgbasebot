@@ -2,10 +2,7 @@
 // Standalone script to be run by a cron job
 
 // --- 1. Setup & Bootstrap ---
-// Prevent direct web access.
-if (php_sapi_name() !== 'cli') {
-    exit('Access Denied: This script can only be run from the command line.');
-}
+// This script is now called by the Cron.php controller, which handles security.
 
 // Set up paths
 $root_path = realpath(__DIR__ . '/..');
