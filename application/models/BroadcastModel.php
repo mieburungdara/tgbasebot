@@ -115,4 +115,12 @@ class BroadcastModel extends CI_Model {
         $this->db->where('id', $id);
         return $this->db->update('broadcasts', ['last_error_message' => $message]);
     }
+
+    /**
+     * Menghapus catatan siaran.
+     */
+    public function delete_broadcast($id) {
+        $this->db->where('id', $id);
+        return $this->db->delete('broadcasts');
+    }
 }
