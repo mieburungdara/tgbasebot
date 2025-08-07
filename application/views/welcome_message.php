@@ -87,13 +87,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 	<h1>Welcome to CodeIgniter!</h1>
 
 	<div id="body">
-		<div style="margin-bottom: 20px; padding: 10px; border: 1px solid #D0D0D0; background-color: #f9f9f9;">
-			<h2>Setup Awal</h2>
-			<p>Klik tombol di bawah ini untuk menjalankan migrasi database dan membuat tabel yang diperlukan untuk aplikasi.</p>
-			<p><strong>Penting:</strong> Tombol ini hanya perlu diklik sekali.</p>
-			<a href="/index.php/migrate" style="padding: 10px 15px; background-color: #E13300; color: white; text-decoration: none; border-radius: 5px;">Jalankan Migrasi Database</a>
-		</div>
-
 		<p>The page you are looking at is being generated dynamically by CodeIgniter.</p>
 
 		<p>If you would like to edit this page you'll find it located at:</p>
