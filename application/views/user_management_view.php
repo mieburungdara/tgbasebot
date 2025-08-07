@@ -55,7 +55,17 @@
                                 <td><?= html_escape(trim($user['first_name'] . ' ' . $user['last_name'])) ?></td>
                                 <td><?= $user['username'] ? '@' . html_escape($user['username']) : '' ?></td>
                                 <td>
-                                    <span class="badge bg-<?= $user['status'] === 'active' ? 'success' : 'danger' ?> status-badge"><?= $user['status'] ?></span>
+                                    <?php
+                                        $status_class = 'secondary'; // Fallback
+                                        if ($user['status'] === 'active') {
+                                            $status_class = 'success';
+                                        } elseif ($user['status'] === 'banned') {
+                                            $status_class = 'danger';
+                                        } elseif ($user['status'] === 'unsubscribed') {
+                                            $status_class = 'warning';
+                                        }
+                                    ?>
+                                    <span class="badge bg-<?= $status_class ?> status-badge"><?= $user['status'] ?></span>
                                 </td>
                                 <td>
                                     <?php if(!empty($user['tags'])): ?>

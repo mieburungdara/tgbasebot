@@ -64,20 +64,36 @@ class UserModel extends CI_Model {
     }
 
     /**
-     * Menandai pengguna sebagai diblokir.
+     * Menetapkan status spesifik untuk pengguna.
+     * @param int $chat_id
+     * @param string $status Status baru ('active', 'banned', 'unsubscribed')
+     * @return bool
      */
-    public function markUserAsBanned($chat_id) {
+    public function setUserStatus($chat_id, $status) {
+        // Validasi status untuk keamanan
+        $allowed_statuses = ['active', 'banned', 'unsubscribed'];
+        if (!in_array($status, $allowed_statuses)) {
+            return FALSE;
+        }
         $this->db->where('chat_id', $chat_id);
-        return $this->db->update('users', ['status' => 'banned']);
+        return $this->db->update('users', ['status' => $status]);
     }
 
     /**
-     * Mendapatkan statistik tentang pengguna (aktif vs diblokir).
+     * Menandai pengguna sebagai diblokir.
+     */
+    public function markUserAsBanned($chat_id) {
+        return $this->setUserStatus($chat_id, 'banned');
+    }
+
+    /**
+     * Mendapatkan statistik tentang pengguna (aktif, diblokir, berhenti langganan).
      */
     public function getUserStats() {
         $this->db->select("COUNT(id) as total_users");
         $this->db->select("COUNT(CASE WHEN status = 'active' THEN 1 END) as active_users");
         $this->db->select("COUNT(CASE WHEN status = 'banned' THEN 1 END) as banned_users");
+        $this->db->select("COUNT(CASE WHEN status = 'unsubscribed' THEN 1 END) as unsubscribed_users");
         $query = $this->db->get('users');
         return $query->row_array();
     }
