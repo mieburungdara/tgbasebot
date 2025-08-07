@@ -7,10 +7,10 @@ class Migration_Add_status_to_users_table extends CI_Migration {
     {
         $fields = array(
             'status' => array(
-                'type' => "ENUM('active', 'banned')",
+                'type' => 'TEXT',
+                'constraint' => 20,
                 'default' => 'active',
-                'null' => FALSE,
-                'after' => 'last_name' // Meletakkan kolom setelah 'last_name'
+                'null' => FALSE
             )
         );
         $this->dbforge->add_column('users', $fields);
