@@ -9,6 +9,7 @@ class Dashboard extends CI_Controller {
         $this->load->model('Log_model');
         $this->load->model('KeywordModel');
         $this->load->model('UserModel');
+        $this->load->model('BroadcastModel');
         $this->load->library('pagination');
         $this->load->helper('url');
         $this->load->helper('form');
@@ -56,6 +57,9 @@ class Dashboard extends CI_Controller {
         $chart_data = $this->Log_model->get_daily_log_counts(14); // Ambil data 14 hari
         $data['chart_labels'] = json_encode(array_keys($chart_data));
         $data['chart_values'] = json_encode(array_values($chart_data));
+
+        // Ambil data statistik pengguna
+        $data['user_stats'] = $this->UserModel->getUserStats();
 
         $this->load->view('log_view', $data);
     }
@@ -127,52 +131,65 @@ class Dashboard extends CI_Controller {
     }
 
     /**
-     * Menampilkan halaman siaran.
+     * Menampilkan halaman siaran dengan riwayat dan paginasi.
      */
     public function broadcast()
     {
-        // Nanti kita akan membuat view ini
-        $this->load->view('broadcast_view');
+        // Konfigurasi Paginasi untuk riwayat siaran
+        $config['base_url'] = site_url('dashboard/broadcast');
+        $config['total_rows'] = $this->BroadcastModel->count_all_broadcasts();
+        $config['per_page'] = 15;
+        $config['page_query_string'] = TRUE;
+        $config['query_string_segment'] = 'page';
+        $config['reuse_query_string'] = TRUE; // Penting agar filter tetap ada saat paginasi
+        $config['full_tag_open'] = '<nav><ul class="pagination justify-content-center">';
+        $config['full_tag_close'] = '</ul></nav>';
+        $config['first_link'] = 'Awal';
+        $config['last_link'] = 'Akhir';
+        $config['next_link'] = '&raquo;';
+        $config['prev_link'] = '&laquo;';
+        $config['num_tag_open'] = '<li class="page-item"><span class="page-link">';
+        $config['num_tag_close'] = '</span></li>';
+        $config['cur_tag_open'] = '<li class="page-item active"><span class="page-link">';
+        $config['cur_tag_close'] = '</span></li>';
+        $config['next_tag_open'] = '<li class="page-item"><span class="page-link">';
+        $config['next_tag_close'] = '</span></li>';
+        $config['prev_tag_open'] = '<li class="page-item"><span class="page-link">';
+        $config['prev_tag_close'] = '</span></li>';
+
+        $this->pagination->initialize($config);
+
+        $page = $this->input->get('page') ? (int)$this->input->get('page') : 0;
+        $offset = $page;
+
+        $data['broadcasts'] = $this->BroadcastModel->get_all_broadcasts($config['per_page'], $offset);
+        $data['pagination_links'] = $this->pagination->create_links();
+        $data['user_stats'] = $this->UserModel->getUserStats();
+
+        $this->load->view('broadcast_view', $data);
     }
 
     /**
-     * Mengirim pesan siaran.
+     * Menambahkan siaran baru ke dalam antrean.
      */
     public function send_broadcast()
     {
-        $message = $this->input->post('message');
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('message', 'Message', 'required');
 
-        if (empty($message)) {
-            // TODO: Tambahkan pesan error flashdata
-            redirect('dashboard/broadcast');
-            return;
-        }
+        if ($this->form_validation->run() == FALSE) {
+            // Jika validasi gagal, muat ulang halaman dengan error
+            $this->broadcast();
+        } else {
+            $message = $this->input->post('message');
+            $user_stats = $this->UserModel->getUserStats();
+            $active_users_count = $user_stats['active_users'];
 
-        // Muat komponen bot
-        require_once FCPATH . 'bot/ApiClient.php';
-        $this->load->model('Settings_model');
-        $botToken = $this->Settings_model->get_setting('bot_token');
-
-        if (empty($botToken)) {
-            // TODO: Tambahkan pesan error flashdata
-            redirect('dashboard/broadcast');
-            return;
-        }
-
-        $apiClient = new ApiClient($botToken, $this->Log_model);
-        $users = $this->UserModel->getAllUsers();
-
-        foreach ($users as $user) {
-            try {
-                $apiClient->sendMessage($user['chat_id'], $message);
-                // Tambahkan jeda kecil untuk menghindari pembatasan laju (rate-limiting)
-                usleep(100000); // 100ms
-            } catch (Exception $e) {
-                $this->Log_model->add_log('error', "Siaran gagal untuk chat_id: {$user['chat_id']}. Error: " . $e->getMessage());
+            if ($active_users_count > 0) {
+                $this->BroadcastModel->create_broadcast($message, $active_users_count);
             }
-        }
 
-        // TODO: Tambahkan pesan sukses flashdata
-        redirect('dashboard/broadcast');
+            redirect('dashboard/broadcast');
+        }
     }
 }
