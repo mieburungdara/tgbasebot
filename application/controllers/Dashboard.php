@@ -297,4 +297,38 @@ class Dashboard extends CI_Controller {
 
         force_download($filename, $data);
     }
+
+    /**
+     * Menghasilkan CRON_SECRET_KEY baru dan menyimpannya di file .env.
+     */
+    public function reset_cron_key()
+    {
+        $env_path = FCPATH . '.env';
+        $new_key = bin2hex(random_bytes(16)); // 32 karakter hex
+
+        if (is_writable($env_path)) {
+            $env_content = file_get_contents($env_path);
+
+            $key_name = 'CRON_SECRET_KEY';
+
+            if (strpos($env_content, $key_name) !== false) {
+                // Kunci sudah ada, ganti nilainya
+                $env_content = preg_replace(
+                    '/^' . preg_quote($key_name, '/') . '=.*/m',
+                    $key_name . '="' . $new_key . '"',
+                    $env_content
+                );
+            } else {
+                // Kunci belum ada, tambahkan di akhir
+                $env_content .= "\n\n" . $key_name . '="' . $new_key . '"';
+            }
+
+            file_put_contents($env_path, $env_content);
+            // TODO: Tambahkan flash message sukses
+        } else {
+            // TODO: Tambahkan flash message error (file tidak dapat ditulis)
+        }
+
+        redirect('dashboard/broadcast');
+    }
 }

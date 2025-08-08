@@ -78,6 +78,7 @@ $route['user_management/update/(:num)'] = 'UserManagement/update/$1';
 // Rute untuk aksi tambahan dasbor
 $route['dashboard/delete_broadcast/(:num)'] = 'dashboard/delete_broadcast/$1';
 $route['dashboard/export_csv'] = 'dashboard/export_csv';
+$route['dashboard/reset_cron_key'] = 'dashboard/reset_cron_key';
 
 // Rute untuk cron job
 $route['cron/run'] = 'cron/run';
