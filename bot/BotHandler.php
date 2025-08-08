@@ -6,17 +6,22 @@ class BotHandler
     protected Log_model $logger;
     protected UserModel $userModel;
     protected KeywordModel $keywordModel;
+    protected Settings_model $settingsModel;
 
-    public function __construct(ApiClient $api, Log_model $logger, UserModel $userModel, KeywordModel $keywordModel)
+    public function __construct(ApiClient $api, Log_model $logger, UserModel $userModel, KeywordModel $keywordModel, Settings_model $settingsModel)
     {
         $this->api = $api;
         $this->logger = $logger;
         $this->userModel = $userModel;
         $this->keywordModel = $keywordModel;
+        $this->settingsModel = $settingsModel;
     }
 
     public function handle(string $rawUpdate): void
     {
+        // Perbarui timestamp untuk pemeriksaan kesehatan bot
+        $this->settingsModel->save_setting('last_incoming_message', date('Y-m-d H:i:s'));
+
         $update = json_decode($rawUpdate, true);
 
         if (!$update || !isset($update['message'])) {

@@ -44,6 +44,9 @@ try {
     $CI->load->model('Settings_model');
     $CI->load->model('Log_model');
 
+    // Perbarui timestamp untuk pemeriksaan kesehatan cron
+    $CI->Settings_model->save_setting('last_cron_run', date('Y-m-d H:i:s'));
+
     require_once FCPATH . 'bot/ApiClient.php';
 
     $botToken = $CI->Settings_model->get_setting('bot_token');
