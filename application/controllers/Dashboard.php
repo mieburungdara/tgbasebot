@@ -54,12 +54,33 @@ class Dashboard extends CI_Controller {
         $data['log_types'] = ['incoming', 'outgoing', 'error']; // Untuk dropdown filter
 
         // Ambil data untuk grafik
-        $chart_data = $this->Log_model->get_daily_log_counts(14); // Ambil data 14 hari
+        $chart_days = $this->input->get('days') ? (int)$this->input->get('days') : 14;
+        $chart_days = in_array($chart_days, [7, 14, 30]) ? $chart_days : 14; // Validasi
+        $chart_data = $this->Log_model->get_daily_log_counts($chart_days);
         $data['chart_labels'] = json_encode(array_keys($chart_data));
         $data['chart_values'] = json_encode(array_values($chart_data));
+        $data['chart_days'] = $chart_days; // Kirim ke view untuk menandai filter aktif
+
+        // Siapkan data untuk Donut Chart
+        $donut_labels = [];
+        $donut_values = [];
+        if (!empty($data['stats']['logs_by_type'])) {
+            foreach($data['stats']['logs_by_type'] as $type_stat) {
+                $donut_labels[] = ucfirst($type_stat['log_type']);
+                $donut_values[] = $type_stat['count'];
+            }
+        }
+        $data['donut_labels'] = json_encode($donut_labels);
+        $data['donut_values'] = json_encode($donut_values);
 
         // Ambil data statistik pengguna
         $data['user_stats'] = $this->UserModel->getUserStats();
+
+        // Ambil data kesehatan bot
+        $data['health_stats'] = [
+            'last_cron_run' => $this->Settings_model->get_setting('last_cron_run'),
+            'last_incoming_message' => $this->Settings_model->get_setting('last_incoming_message')
+        ];
 
         $this->load->view('log_view', $data);
     }
@@ -223,5 +244,56 @@ class Dashboard extends CI_Controller {
             $this->BroadcastModel->delete_broadcast($id);
         }
         redirect('dashboard/broadcast');
+    }
+
+    /**
+     * Mengekspor log yang difilter sebagai file CSV.
+     */
+    public function export_csv()
+    {
+        $this->load->helper('download');
+
+        // Ambil filter yang sama dengan halaman utama
+        $filters = [
+            'log_type'  => $this->input->get('log_type'),
+            'chat_id'   => $this->input->get('chat_id'),
+            'chat_name' => $this->input->get('chat_name'),
+            'keyword'   => $this->input->get('keyword')
+        ];
+        $filters = array_filter($filters);
+
+        // Ambil SEMUA log yang cocok, bukan hanya halaman saat ini
+        $logs = $this->Log_model->get_logs($filters, 0, 0); // Limit 0 untuk mengambil semua
+
+        if (empty($logs)) {
+            // Redirect kembali jika tidak ada log untuk diekspor
+            redirect('dashboard');
+            return;
+        }
+
+        $filename = 'bot_logs_' . date('Ymd_His') . '.csv';
+        $delimiter = ",";
+        $newline = "\r\n";
+        $data = '';
+
+        // Header CSV
+        $data .= '"ID","Timestamp","Log Type","Chat ID","Chat Name","Message"'.$newline;
+
+        // Baris data
+        foreach ($logs as $log) {
+            $line = '"' . $log['id'] . '"' . $delimiter;
+            $line .= '"' . $log['created_at'] . '"' . $delimiter;
+            $line .= '"' . $log['log_type'] . '"' . $delimiter;
+            $line .= '"' . $log['chat_id'] . '"' . $delimiter;
+            $line .= '"' . str_replace('"', '""', $log['chat_name']) . '"' . $delimiter;
+
+            $message = preg_replace('/\s+/', ' ', $log['log_message']);
+            $message = str_replace('"', '""', $message);
+
+            $line .= '"' . $message . '"' . $newline;
+            $data .= $line;
+        }
+
+        force_download($filename, $data);
     }
 }

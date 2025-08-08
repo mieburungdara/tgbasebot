@@ -54,10 +54,34 @@
     <div class="container mt-4">
         <h1 class="mb-4">Dasbor Log Bot</h1>
 
-        <!-- Bagian Grafik Aktivitas -->
+        <!-- Panel Kesehatan Bot -->
         <div class="card mb-4">
             <div class="card-header">
-                Aktivitas Log (14 Hari Terakhir)
+                <i class="bi bi-heart-pulse-fill"></i> Panel Kesehatan Bot
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-6">
+                        <h6 class="card-title">Pesan Terakhir Diterima</h6>
+                        <p class="card-text text-muted"><?= $health_stats['last_incoming_message'] ? $health_stats['last_incoming_message'] : 'Belum ada' ?></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="card-title">Cron Job Siaran Terakhir</h6>
+                        <p class="card-text text-muted"><?= $health_stats['last_cron_run'] ? $health_stats['last_cron_run'] : 'Belum pernah' ?></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bagian Grafik Aktivitas -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Aktivitas Log</span>
+                <div class="btn-group btn-group-sm" role="group">
+                    <a href="<?= site_url('dashboard?days=7') ?>" class="btn btn-outline-secondary <?= ($chart_days == 7) ? 'active' : '' ?>">7 Hari</a>
+                    <a href="<?= site_url('dashboard?days=14') ?>" class="btn btn-outline-secondary <?= ($chart_days == 14) ? 'active' : '' ?>">14 Hari</a>
+                    <a href="<?= site_url('dashboard?days=30') ?>" class="btn btn-outline-secondary <?= ($chart_days == 30) ? 'active' : '' ?>">30 Hari</a>
+                </div>
             </div>
             <div class="card-body" style="height: 250px;">
                 <canvas id="activityChart"></canvas>
@@ -104,49 +128,27 @@
         <h2 class="h4 mb-3">Statistik Log</h2>
         <!-- Bagian Statistik Log -->
         <div class="row">
-            <div class="col-md-3">
-                <div class="card text-white bg-primary">
-                    <div class="card-body">
+            <div class="col-md-4">
+                <div class="card text-white bg-primary mb-4">
+                    <div class="card-body text-center">
                         <h5 class="card-title">Total Log</h5>
                         <p class="card-text fs-4"><?= number_format($stats['total_logs']) ?></p>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card text-white bg-info">
-                    <div class="card-body">
+            <div class="col-md-4">
+                <div class="card text-white bg-info mb-4">
+                    <div class="card-body text-center">
                         <h5 class="card-title">Log (24 Jam)</h5>
                         <p class="card-text fs-4"><?= number_format($stats['logs_today']) ?></p>
                     </div>
                 </div>
             </div>
-            <?php
-                $type_counts = [];
-                foreach ($stats['logs_by_type'] as $type) {
-                    $type_counts[$type['log_type']] = $type['count'];
-                }
-            ?>
-            <div class="col-md-2">
-                <div class="card bg-light">
-                    <div class="card-body">
-                        <h5 class="card-title">Incoming</h5>
-                        <p class="card-text fs-4"><?= number_format($type_counts['incoming'] ?? 0) ?></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card bg-light">
-                    <div class="card-body">
-                        <h5 class="card-title">Outgoing</h5>
-                        <p class="card-text fs-4"><?= number_format($type_counts['outgoing'] ?? 0) ?></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card bg-light">
-                    <div class="card-body">
-                        <h5 class="card-title">Error</h5>
-                        <p class="card-text fs-4"><?= number_format($type_counts['error'] ?? 0) ?></p>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header text-center">Distribusi Tipe Log</div>
+                    <div class="card-body" style="height: 125px;">
+                         <canvas id="logTypeChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -172,6 +174,7 @@
                     <div class="col-md-3 d-flex justify-content-end">
                         <button type="submit" class="btn btn-primary me-2">Filter</button>
                         <a href="<?= site_url('dashboard') ?>" class="btn btn-secondary me-2">Reset</a>
+                        <a href="<?= site_url('dashboard/export_csv?' . http_build_query($filters)) ?>" class="btn btn-success me-2">Unduh CSV</a>
                         <a href="<?= site_url('migrate') ?>" class="btn btn-warning me-2" target="_blank" onclick="return confirm('Ini akan menjalankan migrasi database. Lanjutkan?')">Jalankan Migrasi</a>
                         <a href="<?= site_url('dashboard/clear_logs') ?>" class="btn btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus semua log? Tindakan ini tidak dapat diurungkan.')">Hapus Semua</a>
                     </div>
@@ -278,6 +281,36 @@
                     plugins: {
                         legend: {
                             display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        const donutCtx = document.getElementById('logTypeChart');
+        if(donutCtx) {
+            new Chart(donutCtx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: <?= $donut_labels ?>,
+                    datasets: [{
+                        label: 'Log Types',
+                        data: <?= $donut_values ?>,
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.7)',
+                            'rgba(23, 162, 184, 0.7)',
+                            'rgba(220, 53, 69, 0.7)'
+                        ],
+                        borderColor: '#f8f9fa'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'right',
                         }
                     }
                 }

@@ -44,9 +44,9 @@ try {
         throw new Exception('Token bot tidak ditemukan di database pengaturan.');
     }
 
-    // Inisialisasi komponen bot dengan semua model yang diperlukan
+    // Inisialisialisasi komponen bot dengan semua model yang diperlukan
     $apiClient = new ApiClient($botToken, $CI->Log_model);
-    $botHandler = new BotHandler($apiClient, $CI->Log_model, $CI->UserModel, $CI->KeywordModel);
+    $botHandler = new BotHandler($apiClient, $CI->Log_model, $CI->UserModel, $CI->KeywordModel, $CI->Settings_model);
 
     // Ambil pembaruan mentah dari input stream
     $rawUpdate = file_get_contents('php://input');
