@@ -2,18 +2,20 @@
 // Standalone script to be run by a cron job
 
 // --- 1. Setup & Bootstrap ---
-// This script is now called by the Cron.php controller, which handles security.
+// This script can be called via CLI or included from the Cron controller.
+// We need to bootstrap CodeIgniter only if it hasn't been loaded yet (i.e., when run from CLI).
+if (!defined('FCPATH')) {
+    // Set up paths
+    $root_path = realpath(__DIR__ . '/..');
+    define('FCPATH', $root_path . '/');
+    define('BASEPATH', FCPATH . 'system/');
+    define('APPPATH', FCPATH . 'application/');
+    define('ENVIRONMENT', $_ENV['CI_ENV'] ?? 'production');
 
-// Set up paths
-$root_path = realpath(__DIR__ . '/..');
-define('FCPATH', $root_path . '/');
-define('BASEPATH', FCPATH . 'system/');
-define('APPPATH', FCPATH . 'application/');
-define('ENVIRONMENT', $_ENV['CI_ENV'] ?? 'production');
-
-// Bootstrap CodeIgniter
-chdir(FCPATH);
-require_once BASEPATH . 'core/CodeIgniter.php';
+    // Bootstrap CodeIgniter
+    chdir(FCPATH);
+    require_once BASEPATH . 'core/CodeIgniter.php';
+}
 
 // --- 2. Lock Mechanism ---
 $lock_file = APPPATH . 'logs/broadcast.lock';
