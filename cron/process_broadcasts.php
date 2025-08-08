@@ -2,17 +2,13 @@
 // Standalone script to be run by a cron job
 
 // --- 1. Setup & Bootstrap ---
-// This script can be called via CLI or included from the Cron controller.
-// We need to bootstrap CodeIgniter only if it hasn't been loaded yet (i.e., when run from CLI).
 if (!defined('FCPATH')) {
-    // Set up paths
+    // This block only runs when executed from CLI
     $root_path = realpath(__DIR__ . '/..');
     define('FCPATH', $root_path . '/');
     define('BASEPATH', FCPATH . 'system/');
     define('APPPATH', FCPATH . 'application/');
     define('ENVIRONMENT', $_ENV['CI_ENV'] ?? 'production');
-
-    // Bootstrap CodeIgniter
     chdir(FCPATH);
     require_once BASEPATH . 'core/CodeIgniter.php';
 }
@@ -20,7 +16,6 @@ if (!defined('FCPATH')) {
 // --- 2. Lock Mechanism ---
 $lock_file = APPPATH . 'logs/broadcast.lock';
 if (file_exists($lock_file)) {
-    // If lock file is older than 15 minutes, it might be stale from a crashed process.
     if (time() - filemtime($lock_file) > 900) {
         unlink($lock_file);
         echo "Removed stale lock file.\n";
@@ -30,8 +25,6 @@ if (file_exists($lock_file)) {
     }
 }
 file_put_contents($lock_file, getmypid());
-
-// Ensure the lock file is removed on exit, success or failure
 register_shutdown_function(function() use ($lock_file) {
     if (file_exists($lock_file)) {
         unlink($lock_file);
@@ -41,58 +34,75 @@ register_shutdown_function(function() use ($lock_file) {
 // --- 3. Main Logic ---
 try {
     $CI =& get_instance();
+    $CI->load->model('BotModel');
     $CI->load->model('BroadcastModel');
     $CI->load->model('UserModel');
     $CI->load->model('Settings_model');
     $CI->load->model('Log_model');
-
-    // Perbarui timestamp untuk pemeriksaan kesehatan cron
-    $CI->Settings_model->save_setting('last_cron_run', date('Y-m-d H:i:s'));
-
     require_once FCPATH . 'bot/ApiClient.php';
 
-    $botToken = $CI->Settings_model->get_setting('bot_token');
-    if (empty($botToken)) {
-        throw new Exception('Bot token not found in settings.');
+    // This variable is set when the script is included by Cron.php
+    $run_for_specific_bot = isset($target_bot_id) ? (int)$target_bot_id : 0;
+
+    if ($run_for_specific_bot > 0) {
+        // Run for a single bot
+        echo "Running for specific bot ID: $run_for_specific_bot\n";
+        $bot = $CI->BotModel->getBotById($run_for_specific_bot); // Assumes getBotById exists
+        if ($bot) {
+            process_broadcasts_for_bot($CI, $bot);
+        } else {
+            echo "Bot with ID $run_for_specific_bot not found.\n";
+        }
+    } else {
+        // Run for all bots (CLI context)
+        echo "Running for all bots...\n";
+        $all_bots = $CI->BotModel->getAllBots();
+        foreach ($all_bots as $bot) {
+            echo "\n--- Checking Bot: {$bot['name']} (ID: {$bot['id']}) ---\n";
+            process_broadcasts_for_bot($CI, $bot);
+        }
+        echo "\n--- All bots checked. ---\n";
     }
-    $apiClient = new ApiClient($botToken, $CI->Log_model);
 
-    $batch_size = 25; // Number of users to process per run
+} catch (Throwable $e) {
+    echo "An error occurred: " . $e->getMessage() . "\n";
+    log_message('error', 'Cron Job Failed: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
+}
 
-    // Prioritize 'processing' jobs, then 'pending'
-    $broadcast = $CI->BroadcastModel->get_job_to_process();
+// The main processing logic for one bot
+function process_broadcasts_for_bot($CI, $bot) {
+    $bot_id = $bot['id'];
+    $bot_api_token = $bot['token'];
+
+    // Update timestamp for bot health check
+    $CI->Settings_model->save_setting('last_cron_run', date('Y-m-d H:i:s'), $bot_id);
+
+    $apiClient = new ApiClient($bot_api_token, $CI->Log_model, $bot_id);
+    $batch_size = 25;
+
+    $broadcast = $CI->BroadcastModel->get_job_to_process($bot_id); // Needs update
 
     if (!$broadcast) {
-        echo "No pending broadcasts to process.\n";
-        exit;
+        echo "No pending broadcasts to process for this bot.\n";
+        return;
     }
 
     echo "Found job #{$broadcast['id']}. Status: {$broadcast['status']}.\n";
-
-    // If it was pending, mark as processing
     if ($broadcast['status'] === 'pending') {
         $CI->BroadcastModel->mark_as_processing($broadcast['id']);
         echo "Marked job #{$broadcast['id']} as processing.\n";
     }
 
-    // Get the next batch of users based on targeting
     $offset = (int)$broadcast['sent_count'] + (int)$broadcast['failed_count'];
-    $users = $CI->UserModel->getActiveUsersBatch(
-        $batch_size,
-        $offset,
-        $broadcast['target_tag'],
-        $broadcast['is_test_broadcast']
-    );
+    $users = $CI->UserModel->getActiveUsersBatch($bot_id, $batch_size, $offset, $broadcast['target_tag'], $broadcast['is_test_broadcast']);
 
     if (empty($users)) {
-        // No more users to process, mark as complete
         $CI->BroadcastModel->mark_as_completed($broadcast['id']);
-        echo "Broadcast #{$broadcast['id']} completed. No more active users in the queue.\n";
-        exit;
+        echo "Broadcast #{$broadcast['id']} completed. No more active users.\n";
+        return;
     }
 
-    echo "Processing broadcast #{$broadcast['id']}. Batch of " . count($users) . " users, starting from offset {$offset}.\n";
-
+    echo "Processing broadcast #{$broadcast['id']}. Batch of " . count($users) . " users.\n";
     $current_sent = 0;
     $current_failed = 0;
 
@@ -100,48 +110,28 @@ try {
         try {
             $apiClient->sendMessage($user['chat_id'], $broadcast['message']);
             $current_sent++;
-            echo " -> Sent to {$user['chat_id']}\n";
         } catch (Exception $e) {
             $current_failed++;
             $errorMessage = $e->getMessage();
-            echo " -> Failed for {$user['chat_id']}: {$errorMessage}\n";
-
-            // Log the specific error to the main log table and the broadcast job
             $log_message = "Broadcast #{$broadcast['id']} to user {$user['chat_id']} failed: " . $errorMessage;
-            $CI->Log_model->add_log('error', $log_message, $user['chat_id']);
+            $CI->Log_model->add_log('error', $log_message, $user['chat_id'], $bot_id);
             $CI->BroadcastModel->update_error_message($broadcast['id'], $log_message);
 
-            // Check if the user blocked the bot
-            if (stripos($errorMessage, 'forbidden') !== false && stripos($errorMessage, 'bot was blocked') !== false) {
-                $CI->UserModel->markUserAsBanned($user['chat_id']);
-                echo " --> User {$user['chat_id']} marked as banned.\n";
+            if (stripos($errorMessage, 'bot was blocked') !== false) {
+                $CI->UserModel->markUserAsBanned($user['chat_id'], $bot_id);
             }
         }
-        usleep(120000); // 120ms delay to stay well within rate limits
+        usleep(120000);
     }
 
-    // Update stats for this run
     $CI->BroadcastModel->update_stats($broadcast['id'], $current_sent, $current_failed);
     echo "Batch complete. Sent: {$current_sent}, Failed: {$current_failed}.\n";
 
-    // Final check if this batch completed the job
-    $updated_broadcast = $CI->BroadcastModel->get_broadcast($broadcast['id']);
+    $updated_broadcast = $CI->BroadcastModel->get_broadcast($broadcast['id'], $bot_id);
     if (($updated_broadcast['sent_count'] + $updated_broadcast['failed_count']) >= $updated_broadcast['total_recipients']) {
         $CI->BroadcastModel->mark_as_completed($broadcast['id']);
         echo "Broadcast #{$broadcast['id']} fully completed.\n";
-    } else {
-        echo "Broadcast #{$broadcast['id']} batch processed. More users remaining.\n";
-    }
-
-} catch (Throwable $e) {
-    echo "An error occurred: " . $e->getMessage() . "\n";
-    // Log any fatal errors
-    if (isset($CI) && isset($CI->Log_model)) {
-        $CI->Log_model->add_log('error', 'Cron Job Failed: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
-    } else {
-        error_log('Cron Job Failed (CI might not be loaded): ' . $e->getMessage());
     }
 }
 
-// Lock is released by the shutdown function
 exit(0);

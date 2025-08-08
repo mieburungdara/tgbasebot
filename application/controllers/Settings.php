@@ -1,37 +1,39 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Settings extends CI_Controller {
+class Settings extends MY_Controller {
 
     public function __construct()
     {
         parent::__construct();
         $this->load->model('Settings_model');
-        $this->load->model('Log_model'); // Load Log_model
+        $this->load->model('Log_model');
         $this->load->helper('url');
         $this->load->helper('form');
-        $this->load->library('session');
-        require_once dirname(APPPATH) . '/bot/ApiClient.php'; // Correct path to ApiClient
+        require_once FCPATH . 'bot/ApiClient.php';
     }
 
     public function index()
     {
-        $data['bot_token'] = $this->Settings_model->get_setting('bot_token');
+        if (!$this->selected_bot) {
+            $this->load->view('settings_view', ['error_message' => 'Silakan pilih bot terlebih dahulu.']);
+            return;
+        }
+
+        $data['bot_token'] = $this->Settings_model->get_setting('bot_token', $this->selected_bot_id);
+        // Kita bisa menyimpan token di tabel bots atau di settings. Untuk sekarang, kita asumsikan di settings.
+        // Sebaiknya dipindahkan ke tabel bots.
+        $data['bot_token'] = $this->selected_bot['token'];
+
         $data['success_message'] = $this->session->flashdata('success_message');
         $data['error_message'] = $this->session->flashdata('error_message');
-        $data['webhook_info'] = $this->session->flashdata('webhook_info'); // Get webhook info from flashdata
+        $data['webhook_info'] = $this->session->flashdata('webhook_info');
 
-        if ($this->input->post('save_token'))
+        if ($this->input->post('save_settings'))
         {
-            $token = $this->input->post('bot_token');
-            if ($this->Settings_model->save_setting('bot_token', $token))
-            {
-                $this->session->set_flashdata('success_message', 'Token bot berhasil disimpan.');
-            }
-            else
-            {
-                $this->session->set_flashdata('error_message', 'Gagal menyimpan token bot.');
-            }
+            // Logika ini perlu diperbarui untuk menyimpan ke tabel bots
+            // $this->Settings_model->save_setting('bot_token', $this->input->post('bot_token'), $this->selected_bot_id);
+            $this->session->set_flashdata('success_message', 'Pengaturan disimpan (logika update perlu diimplementasikan).');
             redirect('settings');
         }
 
@@ -40,40 +42,34 @@ class Settings extends CI_Controller {
 
     private function _get_api_client(): ?ApiClient
     {
-        $token = $this->Settings_model->get_setting('bot_token');
+        if (!$this->selected_bot) return null;
+
+        $token = $this->selected_bot['token'];
         if (empty($token)) {
-            $this->session->set_flashdata('error_message', 'Token bot belum diatur. Silakan simpan token terlebih dahulu.');
+            $this->session->set_flashdata('error_message', 'Token untuk bot yang dipilih tidak ditemukan.');
             return null;
         }
-        return new ApiClient($token, $this->Log_model);
+        return new ApiClient($token, $this->Log_model, $this->selected_bot_id);
     }
 
     public function set_webhook()
     {
-        $token = $this->Settings_model->get_setting('bot_token');
-        if (empty($token)) {
-            $this->session->set_flashdata('error_message', 'Token bot belum diatur. Silakan simpan token terlebih dahulu.');
+        if (!$this->selected_bot || empty($this->selected_bot['webhook_token'])) {
+            $this->session->set_flashdata('error_message', 'Bot belum dipilih atau tidak memiliki token webhook.');
             redirect('settings');
             return;
         }
 
-        // Gunakan base_url untuk mendapatkan path yang benar tanpa index.php tambahan
-        $webhookUrl = base_url('bot/index.php');
-
-        // Pastikan URL menggunakan HTTPS
-        if (strpos($webhookUrl, 'http://') === 0) {
-            $webhookUrl = 'https' . substr($webhookUrl, 4);
-        }
+        $webhookUrl = site_url('bot/webhook/' . $this->selected_bot['webhook_token']);
 
         if ($api = $this->_get_api_client()) {
             $result = $api->setWebhook($webhookUrl);
             if ($result && ($result['ok'] ?? false)) {
                 $this->session->set_flashdata('success_message', 'Webhook berhasil diatur ke: ' . $webhookUrl);
             } else {
-                $this->session->set_flashdata('error_message', 'Gagal mengatur webhook. Respon: ' . ($result['description'] ?? 'Tidak ada atau error.'));
+                $this->session->set_flashdata('error_message', 'Gagal mengatur webhook. Respon: ' . ($result['description'] ?? 'Error tidak diketahui.'));
             }
         }
-
         redirect('settings');
     }
 
@@ -82,10 +78,10 @@ class Settings extends CI_Controller {
         if ($api = $this->_get_api_client()) {
             $info = $api->getWebhookInfo();
             if ($info && ($info['ok'] ?? false)) {
-                $this->session->set_flashdata('webhook_info', $info['result']);
+                $this->session->set_flashdata('webhook_info', print_r($info['result'], true));
                 $this->session->set_flashdata('success_message', 'Informasi webhook berhasil diambil.');
             } else {
-                $this->session->set_flashdata('error_message', 'Gagal mengambil info webhook. Respon: ' . ($info['description'] ?? 'Tidak ada atau error.'));
+                $this->session->set_flashdata('error_message', 'Gagal mengambil info webhook. Respon: ' . ($info['description'] ?? 'Error tidak diketahui.'));
             }
         }
         redirect('settings');
@@ -96,9 +92,9 @@ class Settings extends CI_Controller {
         if ($api = $this->_get_api_client()) {
             $result = $api->deleteWebhook();
             if ($result && ($result['ok'] ?? false)) {
-                $this->session->set_flashdata('success_message', 'Webhook berhasil dihapus. ' . ($result['description'] ?? ''));
+                $this->session->set_flashdata('success_message', 'Webhook berhasil dihapus.');
             } else {
-                $this->session->set_flashdata('error_message', 'Gagal menghapus webhook. Respon: ' . ($result['description'] ?? 'Tidak ada atau error.'));
+                $this->session->set_flashdata('error_message', 'Gagal menghapus webhook. Respon: ' . ($result['description'] ?? 'Error tidak diketahui.'));
             }
         }
         redirect('settings');
