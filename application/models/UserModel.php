@@ -9,9 +9,10 @@ class UserModel extends CI_Model {
     }
 
     /**
-     * Menambahkan pengguna baru jika belum ada, atau memperbarui jika sudah ada.
+     * Menambahkan pengguna baru jika belum ada, atau memperbarui jika sudah ada, untuk bot tertentu.
      */
     public function addUser($userData) {
+        $this->db->where('bot_id', $userData['bot_id']);
         $this->db->where('chat_id', $userData['chat_id']);
         $query = $this->db->get('users');
 
@@ -19,77 +20,51 @@ class UserModel extends CI_Model {
             $this->db->insert('users', $userData);
             return $this->db->insert_id();
         } else {
-            // Hanya perbarui nama dan username, jangan sentuh status, tag, dll.
             $update_data = [
                 'username' => $userData['username'],
                 'first_name' => $userData['first_name'],
                 'last_name' => $userData['last_name'],
             ];
-            $this->db->where('chat_id', $userData['chat_id']);
+            $this->db->where('id', $query->row()->id);
             $this->db->update('users', $update_data);
             return $query->row()->id;
         }
     }
 
-    /**
-     * Mengambil batch pengguna aktif untuk diproses siaran.
-     * Dapat difilter berdasarkan tag atau status tes.
-     */
-    public function getActiveUsersBatch($limit, $offset, $tag = NULL, $is_test = FALSE) {
+    public function getActiveUsersBatch($bot_id, $limit, $offset, $tag = NULL, $is_test = FALSE) {
+        $this->db->where('bot_id', $bot_id);
         $this->db->where('status', 'active');
-        if ($is_test) {
-            $this->db->where('is_test_user', 1);
-        }
-        if ($tag) {
-            $this->db->like('tags', $tag, 'both');
-        }
+        if ($is_test) $this->db->where('is_test_user', 1);
+        if ($tag) $this->db->like('tags', $tag, 'both');
         $this->db->order_by('id', 'ASC');
         $this->db->limit($limit, $offset);
         $query = $this->db->get('users');
         return $query->result_array();
     }
 
-    /**
-     * Menghitung pengguna aktif, opsional difilter berdasarkan tag atau status tes.
-     */
-    public function countActiveUsers($tag = NULL, $is_test = FALSE) {
+    public function countActiveUsers($bot_id, $tag = NULL, $is_test = FALSE) {
+        $this->db->where('bot_id', $bot_id);
         $this->db->where('status', 'active');
-        if ($is_test) {
-            $this->db->where('is_test_user', 1);
-        }
-        if ($tag) {
-            $this->db->like('tags', $tag, 'both');
-        }
+        if ($is_test) $this->db->where('is_test_user', 1);
+        if ($tag) $this->db->like('tags', $tag, 'both');
         return $this->db->count_all_results('users');
     }
 
-    /**
-     * Menetapkan status spesifik untuk pengguna.
-     * @param int $chat_id
-     * @param string $status Status baru ('active', 'banned', 'unsubscribed')
-     * @return bool
-     */
-    public function setUserStatus($chat_id, $status) {
-        // Validasi status untuk keamanan
+    public function setUserStatus($chat_id, $status, $bot_id) {
         $allowed_statuses = ['active', 'banned', 'unsubscribed'];
-        if (!in_array($status, $allowed_statuses)) {
-            return FALSE;
-        }
+        if (!in_array($status, $allowed_statuses)) return FALSE;
+
+        $this->db->where('bot_id', $bot_id);
         $this->db->where('chat_id', $chat_id);
         return $this->db->update('users', ['status' => $status]);
     }
 
-    /**
-     * Menandai pengguna sebagai diblokir.
-     */
-    public function markUserAsBanned($chat_id) {
-        return $this->setUserStatus($chat_id, 'banned');
+    public function markUserAsBanned($chat_id, $bot_id) {
+        return $this->setUserStatus($chat_id, 'banned', $bot_id);
     }
 
-    /**
-     * Mendapatkan statistik tentang pengguna (aktif, diblokir, berhenti langganan).
-     */
-    public function getUserStats() {
+    public function getUserStats($bot_id) {
+        $this->db->where('bot_id', $bot_id);
         $this->db->select("COUNT(id) as total_users");
         $this->db->select("COUNT(CASE WHEN status = 'active' THEN 1 END) as active_users");
         $this->db->select("COUNT(CASE WHEN status = 'banned' THEN 1 END) as banned_users");
@@ -98,45 +73,35 @@ class UserModel extends CI_Model {
         return $query->row_array();
     }
 
-    /**
-     * Mengambil semua pengguna dengan paginasi untuk halaman manajemen.
-     */
-    public function getAllUsersWithPagination($limit, $offset) {
+    public function getAllUsersWithPagination($bot_id, $limit, $offset) {
+        $this->db->where('bot_id', $bot_id);
         $this->db->order_by('id', 'DESC');
         $this->db->limit($limit, $offset);
         $query = $this->db->get('users');
         return $query->result_array();
     }
 
-    /**
-     * Menghitung semua pengguna untuk paginasi.
-     */
-    public function countAllUsers() {
-        return $this->db->count_all('users');
+    public function countAllUsers($bot_id) {
+        $this->db->where('bot_id', $bot_id);
+        return $this->db->count_all_results('users');
     }
 
-    /**
-     * Mengambil detail pengguna tunggal berdasarkan ID.
-     */
-    public function getUserById($id) {
+    public function getUserById($id, $bot_id) {
         $this->db->where('id', $id);
+        $this->db->where('bot_id', $bot_id);
         $query = $this->db->get('users');
         return $query->row_array();
     }
 
-    /**
-     * Memperbarui detail pengguna.
-     */
-    public function updateUser($id, $data) {
+    public function updateUser($id, $data, $bot_id) {
         $this->db->where('id', $id);
+        $this->db->where('bot_id', $bot_id);
         return $this->db->update('users', $data);
     }
 
-    /**
-     * Mendapatkan daftar semua tag unik yang digunakan.
-     */
-    public function getAllTags() {
+    public function getAllTags($bot_id) {
         $this->db->select('tags');
+        $this->db->where('bot_id', $bot_id);
         $this->db->where('tags IS NOT NULL');
         $this->db->where('tags !=', '');
         $query = $this->db->get('users');
