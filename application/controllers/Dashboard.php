@@ -10,6 +10,7 @@ class Dashboard extends CI_Controller {
         $this->load->model('KeywordModel');
         $this->load->model('UserModel');
         $this->load->model('BroadcastModel');
+        $this->load->model('Settings_model');
         $this->load->library('pagination');
         $this->load->helper('url');
         $this->load->helper('form');
