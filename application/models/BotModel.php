@@ -44,4 +44,13 @@ class BotModel extends CI_Model {
         $query = $this->db->get('bots');
         return $query->result_array();
     }
+
+    /**
+     * Mengambil detail bot berdasarkan ID.
+     */
+    public function getBotById($id) {
+        $this->db->where('id', $id);
+        $query = $this->db->get('bots');
+        return $query->row_array();
+    }
 }

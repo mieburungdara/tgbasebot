@@ -22,8 +22,10 @@ class BroadcastModel extends CI_Model {
         return $this->db->insert_id();
     }
 
-    public function get_job_to_process() {
-        // This is a system-wide method for the cron, so no bot_id scoping
+    public function get_job_to_process($bot_id = null) {
+        if ($bot_id) {
+            $this->db->where('bot_id', $bot_id);
+        }
         $this->db->where_in('status', ['processing', 'pending']);
         $this->db->order_by('status', 'DESC');
         $this->db->order_by('created_at', 'ASC');

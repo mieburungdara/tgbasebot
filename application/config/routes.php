@@ -82,7 +82,8 @@ $route['dashboard/reset_cron_key'] = 'dashboard/reset_cron_key';
 $route['dashboard/switch_bot/(:num)'] = 'dashboard/switch_bot/$1';
 
 // Rute untuk cron job
-$route['cron/run'] = 'cron/run';
+$route['cron/run'] = 'cron/run'; // Untuk semua bot (hanya CLI)
+$route['cron/run/(:num)'] = 'cron/run/$1'; // Untuk bot spesifik (URL)
 
 // Rute untuk webhook bot (multi-bot)
 $route['bot/webhook/(:any)'] = 'bot_webhook/handle/$1';
@@ -90,3 +91,5 @@ $route['bot/webhook/(:any)'] = 'bot_webhook/handle/$1';
 // Rute untuk Manajemen Bot
 $route['bot_management'] = 'bot_management';
 $route['bot_management/add'] = 'bot_management/add';
+$route['bot_management/edit/(:num)'] = 'bot_management/edit/$1';
+$route['bot_management/update/(:num)'] = 'bot_management/update/$1';

@@ -37,10 +37,10 @@
                         <label class="form-label small"><strong>Opsi 1: Perintah CLI (Disarankan)</strong></label>
                         <input type="text" class="form-control form-control-sm mb-3" value="* * * * * /usr/bin/php <?= FCPATH ?>cron/process_broadcasts.php" readonly>
 
-                        <label class="form-label small"><strong>Opsi 2: URL Cron Job</strong></label>
+                        <label class="form-label small"><strong>Opsi 2: URL Cron Job (untuk bot ini saja)</strong></label>
                         <?php $cron_key = $cron_secret_key ?? 'NOT_SET'; ?>
                         <div class="input-group input-group-sm mb-3">
-                            <input type="text" id="cron-url" class="form-control" value="<?= site_url('cron/run?token=') . $cron_key ?>" readonly>
+                            <input type="text" id="cron-url" class="form-control" value="<?= site_url('cron/run/' . $selected_bot_id . '?token=') . $cron_key ?>" readonly>
                             <button id="toggle-key-btn" class="btn btn-outline-secondary" type="button"><i class="bi bi-eye"></i></button>
                         </div>
 
@@ -51,7 +51,7 @@
                                 <i class="bi bi-arrow-clockwise"></i> Reset Kunci
                             </button>
                         <?= form_close() ?>
-                        <a href="<?= site_url('cron/run?token=') . $cron_key ?>" target="_blank" class="btn btn-sm btn-info" id="test-cron-btn" <?= ($cron_key === 'NOT_SET') ? 'disabled' : '' ?>>
+                        <a href="<?= site_url('cron/run/' . $selected_bot_id . '?token=') . $cron_key ?>" target="_blank" class="btn btn-sm btn-info" id="test-cron-btn" <?= ($cron_key === 'NOT_SET') ? 'disabled' : '' ?>>
                             <i class="bi bi-play-circle"></i> Jalankan Tes URL
                         </a>
                         </div>

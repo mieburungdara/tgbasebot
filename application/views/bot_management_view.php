@@ -32,6 +32,7 @@
                                         <th>ID</th>
                                         <th>Nama</th>
                                         <th>Webhook URL</th>
+                                        <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -40,6 +41,7 @@
                                         <td><?= $bot['id'] ?></td>
                                         <td><?= html_escape($bot['name']) ?></td>
                                         <td><code class="webhook-url"><?= site_url('bot/webhook/' . $bot['webhook_token']) ?></code></td>
+                                         <td><a href="<?= site_url('bot_management/edit/' . $bot['id']) ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a></td>
                                     </tr>
                                     <?php endforeach; else: ?>
                                     <tr>
