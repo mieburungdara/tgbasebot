@@ -79,6 +79,7 @@ $route['user_management/update/(:num)'] = 'UserManagement/update/$1';
 $route['dashboard/delete_broadcast/(:num)'] = 'dashboard/delete_broadcast/$1';
 $route['dashboard/export_csv'] = 'dashboard/export_csv';
 $route['dashboard/reset_cron_key'] = 'dashboard/reset_cron_key';
+$route['dashboard/switch_bot/(:num)'] = 'dashboard/switch_bot/$1';
 
 // Rute untuk cron job
 $route['cron/run'] = 'cron/run';

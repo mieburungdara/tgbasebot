@@ -1,11 +1,10 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class BotManagement extends CI_Controller {
+class BotManagement extends MY_Controller {
 
     public function __construct() {
         parent::__construct();
-        $this->load->model('BotModel');
         $this->load->helper('url');
         $this->load->helper('form');
         $this->load->library('form_validation');
