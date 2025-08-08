@@ -79,13 +79,16 @@
                             <button id="toggle-key-btn" class="btn btn-outline-secondary" type="button"><i class="bi bi-eye"></i></button>
                         </div>
 
-                        <label class="form-label small"><strong>Manajemen Kunci:</strong></label>
+                        <label class="form-label small"><strong>Manajemen & Tes:</strong></label>
                         <div>
-                        <?= form_open('dashboard/reset_cron_key', ['class' => 'd-inline']) ?>
+                        <?= form_open('dashboard/reset_cron_key', ['class' => 'd-inline me-1']) ?>
                             <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Apakah Anda yakin ingin me-reset kunci rahasia? URL cron lama akan berhenti bekerja.')">
-                                <i class="bi bi-arrow-clockwise"></i> Reset Kunci Rahasia
+                                <i class="bi bi-arrow-clockwise"></i> Reset Kunci
                             </button>
                         <?= form_close() ?>
+                        <a href="<?= site_url('cron/run?token=') . $cron_key ?>" target="_blank" class="btn btn-sm btn-info" id="test-cron-btn" <?= ($cron_key === 'NOT_SET') ? 'disabled' : '' ?>>
+                            <i class="bi bi-play-circle"></i> Jalankan Tes URL
+                        </a>
                         </div>
                     </div>
                 </div>
@@ -191,11 +194,13 @@
             const secretKey = "<?= $cron_secret_key ?? '' ?>";
             let keyVisible = false;
 
-            // Initially hide the key and disable button if not set
+            const testBtn = document.getElementById('test-cron-btn');
+            // Initially hide the key and disable buttons if not set
             if (secretKey && secretKey !== 'NOT_SET') {
                 cronUrlInput.value = originalUrl.replace(secretKey, '************');
             } else {
                 toggleBtn.disabled = true;
+                if(testBtn) testBtn.classList.add('disabled');
             }
 
             toggleBtn.addEventListener('click', () => {
