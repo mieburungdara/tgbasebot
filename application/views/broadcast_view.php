@@ -73,7 +73,7 @@
                         <input type="text" class="form-control form-control-sm mb-3" value="* * * * * /usr/bin/php <?= FCPATH ?>cron/process_broadcasts.php" readonly>
 
                         <label class="form-label small"><strong>Opsi 2: URL Cron Job</strong></label>
-                        <?php $cron_key = $_ENV['CRON_SECRET_KEY'] ?? 'SECRET_KEY_NOT_SET'; ?>
+                        <?php $cron_key = $cron_secret_key ?? 'NOT_SET'; ?>
                         <div class="input-group input-group-sm mb-3">
                             <input type="text" id="cron-url" class="form-control" value="<?= site_url('cron/run?token=') . $cron_key ?>" readonly>
                             <button id="toggle-key-btn" class="btn btn-outline-secondary" type="button"><i class="bi bi-eye"></i></button>
@@ -188,12 +188,14 @@
         const cronUrlInput = document.getElementById('cron-url');
         if (toggleBtn && cronUrlInput) {
             const originalUrl = cronUrlInput.value;
-            const secretKey = "<?= $_ENV['CRON_SECRET_KEY'] ?? '' ?>";
+            const secretKey = "<?= $cron_secret_key ?? '' ?>";
             let keyVisible = false;
 
-            // Initially hide the key
-            if (secretKey) {
+            // Initially hide the key and disable button if not set
+            if (secretKey && secretKey !== 'NOT_SET') {
                 cronUrlInput.value = originalUrl.replace(secretKey, '************');
+            } else {
+                toggleBtn.disabled = true;
             }
 
             toggleBtn.addEventListener('click', () => {
