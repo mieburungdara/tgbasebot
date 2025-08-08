@@ -5,16 +5,14 @@ class Cron extends CI_Controller {
 
     public function __construct() {
         parent::__construct();
-        // Memuat environment variables
-        $dotenv = Dotenv\Dotenv::createImmutable(FCPATH);
-        $dotenv->load();
+        $this->load->model('Settings_model');
     }
 
     /**
      * Menjalankan skrip cron job siaran dengan validasi token.
      */
     public function run() {
-        $cron_secret = $_ENV['CRON_SECRET_KEY'] ?? NULL;
+        $cron_secret = $this->Settings_model->get_setting('cron_secret_key');
         $token = $this->input->get('token');
 
         // Validasi token untuk keamanan
