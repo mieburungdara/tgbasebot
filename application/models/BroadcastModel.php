@@ -8,12 +8,9 @@ class BroadcastModel extends CI_Model {
         $this->load->database();
     }
 
-    /**
-     * Membuat entri siaran baru dengan opsi penargetan.
-     * @param array $data Data siaran, termasuk 'message', 'total_recipients', dan opsional 'target_tag', 'is_test_broadcast'
-     */
-    public function create_broadcast($data) {
+    public function create_broadcast($data, $bot_id) {
         $defaults = [
+            'bot_id' => $bot_id,
             'status' => 'pending',
             'created_at' => date('Y-m-d H:i:s'),
             'is_test_broadcast' => 0,
@@ -25,22 +22,16 @@ class BroadcastModel extends CI_Model {
         return $this->db->insert_id();
     }
 
-    /**
-     * Mengambil pekerjaan siaran berikutnya untuk diproses.
-     * Memprioritaskan yang sudah 'processing', lalu yang 'pending'.
-     */
     public function get_job_to_process() {
+        // This is a system-wide method for the cron, so no bot_id scoping
         $this->db->where_in('status', ['processing', 'pending']);
-        $this->db->order_by('status', 'DESC'); // 'processing' > 'pending'
+        $this->db->order_by('status', 'DESC');
         $this->db->order_by('created_at', 'ASC');
         $this->db->limit(1);
         $query = $this->db->get('broadcasts');
         return $query->row_array();
     }
 
-    /**
-     * Menandai siaran sebagai 'processing'.
-     */
     public function mark_as_processing($id) {
         $this->db->where('id', $id);
         return $this->db->update('broadcasts', [
@@ -49,9 +40,6 @@ class BroadcastModel extends CI_Model {
         ]);
     }
 
-    /**
-     * Menandai siaran sebagai 'completed'.
-     */
     public function mark_as_completed($id) {
         $this->db->where('id', $id);
         return $this->db->update('broadcasts', [
@@ -60,9 +48,6 @@ class BroadcastModel extends CI_Model {
         ]);
     }
 
-    /**
-     * Memperbarui statistik terkirim dan gagal untuk sebuah siaran.
-     */
     public function update_stats($id, $sent_increment, $failed_increment) {
         $this->db->where('id', $id);
         $this->db->set('sent_count', 'sent_count + ' . (int)$sent_increment, FALSE);
@@ -70,28 +55,23 @@ class BroadcastModel extends CI_Model {
         return $this->db->update('broadcasts');
     }
 
-    /**
-     * Mengambil detail siaran tunggal.
-     */
-    public function get_broadcast($id) {
+    public function get_broadcast($id, $bot_id) {
         $this->db->where('id', $id);
+        $this->db->where('bot_id', $bot_id);
         $query = $this->db->get('broadcasts');
         return $query->row_array();
     }
 
-    /**
-     * Menerapkan filter pada query siaran.
-     */
     private function _apply_broadcast_filters($filters = [])
     {
+        if (!empty($filters['bot_id'])) {
+            $this->db->where('bot_id', $filters['bot_id']);
+        }
         if (!empty($filters['status'])) {
             $this->db->where('status', $filters['status']);
         }
     }
 
-    /**
-     * Mengambil semua siaran untuk ditampilkan di dasbor, dengan filter dan paginasi.
-     */
     public function get_all_broadcasts($filters = [], $limit = 25, $offset = 0) {
         $this->_apply_broadcast_filters($filters);
         $this->db->order_by('created_at', 'DESC');
@@ -100,27 +80,19 @@ class BroadcastModel extends CI_Model {
         return $query->result_array();
     }
 
-    /**
-     * Menghitung total siaran, dengan filter.
-     */
     public function count_all_broadcasts($filters = []) {
         $this->_apply_broadcast_filters($filters);
         return $this->db->count_all_results('broadcasts');
     }
 
-    /**
-     * Memperbarui pesan error terakhir untuk sebuah siaran.
-     */
     public function update_error_message($id, $message) {
         $this->db->where('id', $id);
         return $this->db->update('broadcasts', ['last_error_message' => $message]);
     }
 
-    /**
-     * Menghapus catatan siaran.
-     */
-    public function delete_broadcast($id) {
+    public function delete_broadcast($id, $bot_id) {
         $this->db->where('id', $id);
+        $this->db->where('bot_id', $bot_id);
         return $this->db->delete('broadcasts');
     }
 }

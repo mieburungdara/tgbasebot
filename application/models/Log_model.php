@@ -11,16 +11,11 @@ class Log_model extends CI_Model {
 
     /**
      * Menambahkan entri log baru ke database.
-     *
-     * @param string $type Jenis log (misalnya, 'incoming', 'outgoing', 'error').
-     * @param string $message Pesan atau data log.
-     * @param int|null $chat_id ID obrolan opsional.
-     * @param string|null $chat_name Nama obrolan opsional.
-     * @return bool
      */
-    public function add_log($type, $message, $chat_id = null, $chat_name = null)
+    public function add_log($type, $message, $chat_id = null, $chat_name = null, $bot_id = null)
     {
         $data = array(
+            'bot_id'      => $bot_id,
             'log_type'    => $type,
             'log_message' => $message,
             'chat_id'     => $chat_id,
@@ -31,43 +26,13 @@ class Log_model extends CI_Model {
     }
 
     /**
-     * Menghitung jumlah log berdasarkan filter.
-     *
-     * @param array $filters Filter untuk diterapkan.
-     * @return int
-     */
-    public function count_logs($filters = [])
-    {
-        $this->db->from('bot_logs');
-        $this->_apply_filters($filters);
-        return $this->db->count_all_results();
-    }
-
-    /**
-     * Mengambil log dari database dengan filter dan paginasi.
-     *
-     * @param array $filters Filter untuk diterapkan.
-     * @param int $limit Jumlah log yang akan diambil.
-     * @param int $offset Offset untuk paginasi.
-     * @return array
-     */
-    public function get_logs($filters = [], $limit = 25, $offset = 0)
-    {
-        $this->db->from('bot_logs');
-        $this->_apply_filters($filters);
-        $this->db->order_by('id', 'DESC');
-        $this->db->limit($limit, $offset);
-        $query = $this->db->get();
-        return $query->result_array();
-    }
-
-    /**
      * Menerapkan filter ke query database secara privat.
-     *
-     * @param array $filters Filter untuk diterapkan.
      */
     private function _apply_filters($filters = [])
     {
+        if (!empty($filters['bot_id'])) {
+            $this->db->where('bot_id', $filters['bot_id']);
+        }
         if (!empty($filters['log_type'])) {
             $this->db->where('log_type', $filters['log_type']);
         }
@@ -83,20 +48,44 @@ class Log_model extends CI_Model {
     }
 
     /**
-     * Mengambil statistik log.
-     *
-     * @return array
+     * Menghitung jumlah log berdasarkan filter.
      */
-    public function get_stats()
+    public function count_logs($filters = [])
+    {
+        $this->_apply_filters($filters);
+        return $this->db->count_all_results('bot_logs');
+    }
+
+    /**
+     * Mengambil log dari database dengan filter dan paginasi.
+     */
+    public function get_logs($filters = [], $limit = 25, $offset = 0)
+    {
+        $this->_apply_filters($filters);
+        $this->db->order_by('id', 'DESC');
+        if ($limit > 0) {
+            $this->db->limit($limit, $offset);
+        }
+        $query = $this->db->get('bot_logs');
+        return $query->result_array();
+    }
+
+    /**
+     * Mengambil statistik log untuk bot tertentu.
+     */
+    public function get_stats($bot_id)
     {
         $stats = [];
-        $stats['total_logs'] = $this->db->count_all('bot_logs');
+        $this->db->where('bot_id', $bot_id);
+        $stats['total_logs'] = $this->db->count_all_results('bot_logs');
 
         $this->db->select('log_type, COUNT(*) as count');
+        $this->db->where('bot_id', $bot_id);
         $this->db->group_by('log_type');
         $query = $this->db->get('bot_logs');
         $stats['logs_by_type'] = $query->result_array();
 
+        $this->db->where('bot_id', $bot_id);
         $this->db->where('created_at >=', date('Y-m-d H:i:s', strtotime('-24 hours')));
         $stats['logs_today'] = $this->db->count_all_results('bot_logs');
 
@@ -104,49 +93,42 @@ class Log_model extends CI_Model {
     }
 
     /**
-     * Menghapus entri log tunggal.
-     *
-     * @param int $id ID log yang akan dihapus.
-     * @return bool
+     * Menghapus entri log tunggal untuk bot tertentu.
      */
-    public function delete_log($id)
+    public function delete_log($id, $bot_id)
     {
+        $this->db->where('bot_id', $bot_id);
         return $this->db->delete('bot_logs', ['id' => $id]);
     }
 
     /**
-     * Menghapus semua entri log dari database.
-     *
-     * @return bool
+     * Menghapus semua entri log dari database untuk bot tertentu.
      */
-    public function clear_all_logs()
+    public function clear_all_logs($bot_id)
     {
-        return $this->db->truncate('bot_logs');
+        $this->db->where('bot_id', $bot_id);
+        return $this->db->delete('bot_logs');
     }
 
     /**
-     * Mengambil jumlah log harian selama N hari terakhir.
-     *
-     * @param int $days Jumlah hari untuk dilihat kembali.
-     * @return array
+     * Mengambil jumlah log harian selama N hari terakhir untuk bot tertentu.
      */
-    public function get_daily_log_counts($days = 7)
+    public function get_daily_log_counts($days = 7, $bot_id)
     {
         $this->db->select('DATE(created_at) as date, COUNT(id) as count');
+        $this->db->where('bot_id', $bot_id);
         $this->db->where('created_at >=', date('Y-m-d H:i:s', strtotime("-$days days")));
         $this->db->group_by('DATE(created_at)');
         $this->db->order_by('date', 'ASC');
         $query = $this->db->get('bot_logs');
         $results = $query->result_array();
 
-        // Buat rentang tanggal untuk memastikan semua hari ada, bahkan yang memiliki 0 log
         $date_range = [];
         for ($i = $days - 1; $i >= 0; $i--) {
             $date = date('Y-m-d', strtotime("-$i days"));
             $date_range[$date] = 0;
         }
 
-        // Isi jumlah dari hasil kueri
         foreach ($results as $row) {
             $date_range[$row['date']] = (int)$row['count'];
         }

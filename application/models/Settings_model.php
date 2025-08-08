@@ -10,12 +10,11 @@ class Settings_model extends CI_Model {
     }
 
     /**
-     * Mengambil nilai pengaturan berdasarkan key.
-     * @param string $key Kunci pengaturan yang dicari.
-     * @return string|null Mengembalikan nilai pengaturan atau null jika tidak ditemukan.
+     * Mengambil nilai pengaturan berdasarkan key untuk bot tertentu.
      */
-    public function get_setting($key)
+    public function get_setting($key, $bot_id)
     {
+        $this->db->where('bot_id', $bot_id);
         $query = $this->db->get_where('settings', array('key' => $key), 1);
         if ($query->num_rows() > 0)
         {
@@ -25,28 +24,24 @@ class Settings_model extends CI_Model {
     }
 
     /**
-     * Menyimpan atau memperbarui nilai pengaturan.
-     * @param string $key Kunci pengaturan.
-     * @param string $value Nilai pengaturan yang akan disimpan.
-     * @return bool
+     * Menyimpan atau memperbarui nilai pengaturan untuk bot tertentu.
      */
-    public function save_setting($key, $value)
+    public function save_setting($key, $value, $bot_id)
     {
-        $data = array('key' => $key, 'value' => $value);
+        $data = array('bot_id' => $bot_id, 'key' => $key, 'value' => $value);
 
-        // Periksa apakah key sudah ada
+        $this->db->where('bot_id', $bot_id);
         $this->db->where('key', $key);
         $query = $this->db->get('settings');
 
         if ($query->num_rows() > 0)
         {
-            // Jika ada, perbarui
+            $this->db->where('bot_id', $bot_id);
             $this->db->where('key', $key);
             return $this->db->update('settings', array('value' => $value));
         }
         else
         {
-            // Jika tidak ada, sisipkan
             return $this->db->insert('settings', $data);
         }
     }

@@ -82,3 +82,10 @@ $route['dashboard/reset_cron_key'] = 'dashboard/reset_cron_key';
 
 // Rute untuk cron job
 $route['cron/run'] = 'cron/run';
+
+// Rute untuk webhook bot (multi-bot)
+$route['bot/webhook/(:any)'] = 'bot_webhook/handle/$1';
+
+// Rute untuk Manajemen Bot
+$route['bot_management'] = 'bot_management';
+$route['bot_management/add'] = 'bot_management/add';

@@ -7,25 +7,27 @@ class BotHandler
     protected UserModel $userModel;
     protected KeywordModel $keywordModel;
     protected Settings_model $settingsModel;
+    protected int $bot_id;
 
-    public function __construct(ApiClient $api, Log_model $logger, UserModel $userModel, KeywordModel $keywordModel, Settings_model $settingsModel)
+    public function __construct(ApiClient $api, Log_model $logger, UserModel $userModel, KeywordModel $keywordModel, Settings_model $settingsModel, int $bot_id)
     {
         $this->api = $api;
         $this->logger = $logger;
         $this->userModel = $userModel;
         $this->keywordModel = $keywordModel;
         $this->settingsModel = $settingsModel;
+        $this->bot_id = $bot_id;
     }
 
     public function handle(string $rawUpdate): void
     {
         // Perbarui timestamp untuk pemeriksaan kesehatan bot
-        $this->settingsModel->save_setting('last_incoming_message', date('Y-m-d H:i:s'));
+        $this->settingsModel->save_setting('last_incoming_message', date('Y-m-d H:i:s'), $this->bot_id);
 
         $update = json_decode($rawUpdate, true);
 
         if (!$update || !isset($update['message'])) {
-            $this->logger->add_log('error', 'Pembaruan masuk tidak valid atau tidak berisi pesan.');
+            $this->logger->add_log('error', 'Pembaruan masuk tidak valid atau tidak berisi pesan.', null, null, $this->bot_id);
             return;
         }
 
@@ -40,7 +42,7 @@ class BotHandler
         $chatId = $chat['id'];
         $chatName = $this->getChatName($chat);
 
-        $this->logger->add_log('incoming', $rawUpdate, $chatId, $chatName);
+        $this->logger->add_log('incoming', $rawUpdate, $chatId, $chatName, $this->bot_id);
 
         // --- 2. Handle Commands ---
         if (strpos($text, '/') === 0) {
@@ -50,7 +52,7 @@ class BotHandler
 
         // --- 3. Handle Keyword Replies ---
         if (!empty($text)) {
-            $reply = $this->keywordModel->getReply($text);
+            $reply = $this->keywordModel->getReply($text, $this->bot_id);
             if ($reply) {
                 $this->api->sendMessage($chatId, $reply);
                 return;
@@ -69,10 +71,11 @@ class BotHandler
         // Hanya simpan untuk obrolan pribadi, bukan grup
         if ($chat['type'] === 'private') {
             $userData = [
-                'chat_id' => $chat['id'],
+                'bot_id'     => $this->bot_id,
+                'chat_id'    => $chat['id'],
                 'first_name' => $chat['first_name'] ?? null,
-                'last_name' => $chat['last_name'] ?? null,
-                'username' => $chat['username'] ?? null
+                'last_name'  => $chat['last_name'] ?? null,
+                'username'   => $chat['username'] ?? null
             ];
             $this->userModel->addUser($userData);
         }
@@ -101,12 +104,12 @@ class BotHandler
                 break;
 
             case '/subscribe':
-                $this->userModel->setUserStatus($chatId, 'active');
+                $this->userModel->setUserStatus($chatId, 'active', $this->bot_id);
                 $responseText = "Terima kasih! Anda telah kembali berlangganan dan akan menerima siaran berikutnya.";
                 break;
 
             case '/unsubscribe':
-                $this->userModel->setUserStatus($chatId, 'unsubscribed');
+                $this->userModel->setUserStatus($chatId, 'unsubscribed', $this->bot_id);
                 $responseText = "Anda telah berhasil berhenti berlangganan dari pesan siaran. Anda tidak akan menerima siaran lagi kecuali Anda mengetik /subscribe.";
                 break;
 

@@ -46,6 +46,7 @@
                     <li class="nav-item"><a class="nav-link" href="<?= site_url('dashboard/keywords') ?>">Keywords</a></li>
                     <li class="nav-item"><a class="nav-link" href="<?= site_url('dashboard/broadcast') ?>">Broadcast</a></li>
                     <li class="nav-item"><a class="nav-link" href="<?= site_url('user_management') ?>">Users</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?= site_url('bot_management') ?>">Bots</a></li>
                 </ul>
             </div>
         </div>
