@@ -67,14 +67,26 @@
                 <div class="card mb-4 cron-info">
                     <div class="card-header"><i class="bi bi-clock-history"></i> Informasi Cron Job</div>
                     <div class="card-body">
-                        <p>Untuk mengirim siaran di latar belakang, Anda perlu mengatur cron job di server Anda.</p>
-                        <strong>Opsi 1: Perintah CLI (Disarankan)</strong>
-                        <p><small>Jalankan perintah ini setiap menit.</small></p>
-                        <code>* * * * * /usr/bin/php <?= FCPATH ?>cron/process_broadcasts.php</code>
-                        <hr>
-                        <strong>Opsi 2: URL (dengan Kunci Rahasia)</strong>
-                        <p><small>Atur cron job untuk memanggil URL ini. Ganti `SECRET_KEY` dengan kunci di file `.env` Anda.</small></p>
-                        <code>* * * * * curl "<?= site_url('cron/run?token=SECRET_KEY') ?>"</code>
+                        <p class="mb-2">Gunakan salah satu metode di bawah ini untuk menjalankan siaran di latar belakang (setiap menit disarankan).</p>
+
+                        <label class="form-label small"><strong>Opsi 1: Perintah CLI (Disarankan)</strong></label>
+                        <input type="text" class="form-control form-control-sm mb-3" value="* * * * * /usr/bin/php <?= FCPATH ?>cron/process_broadcasts.php" readonly>
+
+                        <label class="form-label small"><strong>Opsi 2: URL Cron Job</strong></label>
+                        <?php $cron_key = $_ENV['CRON_SECRET_KEY'] ?? 'SECRET_KEY_NOT_SET'; ?>
+                        <div class="input-group input-group-sm mb-3">
+                            <input type="text" id="cron-url" class="form-control" value="<?= site_url('cron/run?token=') . $cron_key ?>" readonly>
+                            <button id="toggle-key-btn" class="btn btn-outline-secondary" type="button"><i class="bi bi-eye"></i></button>
+                        </div>
+
+                        <label class="form-label small"><strong>Manajemen Kunci:</strong></label>
+                        <div>
+                        <?= form_open('dashboard/reset_cron_key', ['class' => 'd-inline']) ?>
+                            <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Apakah Anda yakin ingin me-reset kunci rahasia? URL cron lama akan berhenti bekerja.')">
+                                <i class="bi bi-arrow-clockwise"></i> Reset Kunci Rahasia
+                            </button>
+                        <?= form_close() ?>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -170,6 +182,31 @@
             const modalBodyP = messageModal.querySelector('.modal-body p');
             modalBodyP.textContent = message;
         });
+
+        // Toggle Cron Key Visibility
+        const toggleBtn = document.getElementById('toggle-key-btn');
+        const cronUrlInput = document.getElementById('cron-url');
+        if (toggleBtn && cronUrlInput) {
+            const originalUrl = cronUrlInput.value;
+            const secretKey = "<?= $_ENV['CRON_SECRET_KEY'] ?? '' ?>";
+            let keyVisible = false;
+
+            // Initially hide the key
+            if (secretKey) {
+                cronUrlInput.value = originalUrl.replace(secretKey, '************');
+            }
+
+            toggleBtn.addEventListener('click', () => {
+                keyVisible = !keyVisible;
+                if (keyVisible) {
+                    cronUrlInput.value = originalUrl;
+                    toggleBtn.innerHTML = '<i class="bi bi-eye-slash-fill"></i>';
+                } else {
+                    cronUrlInput.value = originalUrl.replace(secretKey, '************');
+                    toggleBtn.innerHTML = '<i class="bi bi-eye-fill"></i>';
+                }
+            });
+        }
     </script>
 </body>
 </html>
