@@ -70,6 +70,14 @@ class ApiClient
     }
 
     /**
+     * Mendapatkan informasi dasar tentang bot.
+     */
+    public function getMe(): ?array
+    {
+        return $this->_execute_curl('getMe');
+    }
+
+    /**
      * Mendapatkan informasi webhook bot saat ini.
      */
     public function getWebhookInfo(): ?array
