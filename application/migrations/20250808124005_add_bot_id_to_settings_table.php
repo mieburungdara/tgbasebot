@@ -17,8 +17,8 @@ class Migration_Add_bot_id_to_settings_table extends CI_Migration {
             );
             $this->dbforge->add_column('settings', $fields);
 
-            // Menambahkan composite index untuk pencarian yang lebih cepat
-            $this->db->query('CREATE INDEX bot_id_key_index ON settings(bot_id, `key`)');
+            // Menambahkan composite unique index untuk memastikan key unik per bot
+            $this->db->query('ALTER TABLE settings ADD CONSTRAINT bot_id_key_unique UNIQUE (bot_id, `key`)');
         }
     }
 
