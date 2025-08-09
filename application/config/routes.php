@@ -93,3 +93,4 @@ $route['bot_management'] = 'BotManagement';
 $route['bot_management/add'] = 'BotManagement/add';
 $route['bot_management/edit/(:num)'] = 'BotManagement/edit/$1';
 $route['bot_management/update/(:num)'] = 'BotManagement/update/$1';
+$route['bot_management/reset_cron_key/(:num)'] = 'BotManagement/reset_cron_key/$1';
