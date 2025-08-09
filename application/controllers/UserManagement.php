@@ -3,6 +3,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class UserManagement extends MY_Controller {
 
+    protected $selected_bot_id;
+
     public function __construct() {
         parent::__construct();
         $this->load->model('UserModel');
