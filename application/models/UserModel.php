@@ -63,8 +63,10 @@ class UserModel extends CI_Model {
         return $this->setUserStatus($chat_id, 'banned', $bot_id);
     }
 
-    public function getUserStats($bot_id) {
-        $this->db->where('bot_id', $bot_id);
+    public function getUserStats($bot_id = null) {
+        if ($bot_id) {
+            $this->db->where('bot_id', $bot_id);
+        }
         $this->db->select("COUNT(id) as total_users");
         $this->db->select("COUNT(CASE WHEN status = 'active' THEN 1 END) as active_users");
         $this->db->select("COUNT(CASE WHEN status = 'banned' THEN 1 END) as banned_users");

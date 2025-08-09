@@ -9,20 +9,18 @@ class KeywordModel extends CI_Model {
     }
 
     /**
-     * Mengambil semua balasan kata kunci untuk bot tertentu.
+     * Mengambil semua balasan kata kunci (global).
      */
-    public function getKeywords($bot_id) {
-        $this->db->where('bot_id', $bot_id);
+    public function getKeywords() {
         $this->db->order_by('keyword', 'ASC');
         $query = $this->db->get('keyword_replies');
         return $query->result_array();
     }
 
     /**
-     * Mengambil balasan untuk kata kunci tertentu untuk bot tertentu.
+     * Mengambil balasan untuk kata kunci tertentu (global).
      */
-    public function getReply($keyword, $bot_id) {
-        $this->db->where('bot_id', $bot_id);
+    public function getReply($keyword) {
         $this->db->where('LOWER(keyword)', strtolower($keyword));
         $query = $this->db->get('keyword_replies');
         if ($query->num_rows() > 0) {
@@ -32,19 +30,17 @@ class KeywordModel extends CI_Model {
     }
 
     /**
-     * Menambahkan balasan kata kunci baru untuk bot tertentu.
+     * Menambahkan balasan kata kunci baru (global).
      */
-    public function addKeyword($data, $bot_id) {
-        $data['bot_id'] = $bot_id;
+    public function addKeyword($data) {
         return $this->db->insert('keyword_replies', $data);
     }
 
     /**
-     * Menghapus balasan kata kunci berdasarkan ID untuk bot tertentu.
+     * Menghapus balasan kata kunci berdasarkan ID (global).
      */
-    public function deleteKeyword($id, $bot_id) {
+    public function deleteKeyword($id) {
         $this->db->where('id', $id);
-        $this->db->where('bot_id', $bot_id);
         return $this->db->delete('keyword_replies');
     }
 }

@@ -59,8 +59,17 @@
     <div class="card-body">
         <h5 class="card-title">Filter & Aksi Log</h5>
         <?= form_open('dashboard', ['method' => 'get', 'class' => 'row g-3 align-items-center']) ?>
+                    <div class="col-md-2">
+                        <select name="bot_id" class="form-select">
+                            <option value="">Semua Bot</option>
+                            <?php foreach($all_bots as $bot): ?>
+                                <option value="<?= $bot['id'] ?>" <?= set_select('bot_id', $bot['id'], !empty($filters['bot_id']) && $filters['bot_id'] == $bot['id']) ?>>
+                                    <?= html_escape($bot['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
             <div class="col-md-2"><input type="text" name="chat_id" class="form-control" placeholder="Chat ID" value="<?= html_escape($filters['chat_id'] ?? '') ?>"></div>
-            <div class="col-md-2"><input type="text" name="chat_name" class="form-control" placeholder="Nama Chat" value="<?= html_escape($filters['chat_name'] ?? '') ?>"></div>
             <div class="col-md-3"><input type="text" name="keyword" class="form-control" placeholder="Kata Kunci di Pesan" value="<?= html_escape($filters['keyword'] ?? '') ?>"></div>
             <div class="col-md-5 d-flex justify-content-end">
                 <button type="submit" class="btn btn-primary me-2">Filter</button>
@@ -80,11 +89,12 @@
         <?php else: ?>
             <div class="table-responsive">
                 <table class="table table-striped table-hover">
-                    <thead><tr><th>ID</th><th>Timestamp</th><th>Tipe</th><th>Chat ID</th><th>Nama Chat</th><th>Pesan</th><th>Aksi</th></tr></thead>
+                            <thead><tr><th>ID</th><th>Bot</th><th>Timestamp</th><th>Tipe</th><th>Chat ID</th><th>Nama Chat</th><th>Pesan</th><th>Aksi</th></tr></thead>
                     <tbody>
                         <?php foreach ($logs as $log): ?>
                             <tr>
                                 <td><?= $log['id'] ?></td>
+                                        <td><span class="badge bg-dark"><?= html_escape($log['bot_name']) ?></span></td>
                                 <td><?= $log['created_at'] ?></td>
                                 <td>
                                     <?php

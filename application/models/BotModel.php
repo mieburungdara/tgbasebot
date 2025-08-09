@@ -40,8 +40,11 @@ class BotModel extends CI_Model {
      * Mengambil semua bot yang terdaftar.
      */
     public function getAllBots() {
-        $this->db->order_by('name', 'ASC');
-        $query = $this->db->get('bots');
+        $this->db->select('b.*, s.value as cron_secret_key');
+        $this->db->from('bots as b');
+        $this->db->join('settings as s', "s.bot_id = b.id AND s.key = 'cron_secret_key'", 'left');
+        $this->db->order_by('b.name', 'ASC');
+        $query = $this->db->get();
         return $query->result_array();
     }
 
