@@ -10,24 +10,25 @@ class Bot_api extends MY_Controller {
     }
 
     private function _send_telegram_request($token, $method, $params = []) {
-        $url = "https://api.telegram.org/bot{$token}/{$method}";
+        try {
+            $client = new \GuzzleHttp\Client([
+                'base_uri' => "https://api.telegram.org/bot{$token}/",
+                'timeout'  => 10.0,
+                'verify' => false, // Bypass SSL verification on some servers
+            ]);
 
-        $options = [
-            'http' => [
-                'method' => 'GET',
-                'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
-                'ignore_errors' => true,
-            ],
-        ];
+            $response = $client->request('GET', $method, [
+                'query' => $params
+            ]);
 
-        if (!empty($params)) {
-            $url .= '?' . http_build_query($params);
+            return json_decode($response->getBody()->getContents(), true);
+
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            if ($e->hasResponse()) {
+                return json_decode($e->getResponse()->getBody()->getContents(), true);
+            }
+            return ['ok' => false, 'error_code' => $e->getCode(), 'description' => $e->getMessage()];
         }
-
-        $context = stream_context_create($options);
-        $response = file_get_contents($url, false, $context);
-
-        return json_decode($response, true);
     }
 
     public function info($bot_id) {
