@@ -8,6 +8,7 @@ class BotManagement extends MY_Controller {
         $this->load->helper('url');
         $this->load->helper('form');
         $this->load->library('form_validation');
+        $this->load->model('Settings_model');
     }
 
     public function index() {
@@ -54,5 +55,24 @@ class BotManagement extends MY_Controller {
             $this->db->where('id', $id)->update('bots', $bot_data);
             redirect('bot_management');
         }
+    }
+
+    public function reset_cron_key($bot_id) {
+        if (empty($bot_id)) {
+            show_404();
+        }
+
+        // Pastikan bot ada
+        $bot = $this->BotModel->getBotById($bot_id);
+        if (!$bot) {
+            show_404();
+        }
+
+        // Buat kunci baru dan simpan
+        $new_key = bin2hex(random_bytes(16));
+        $this->Settings_model->save_setting('cron_secret_key', $new_key, $bot_id);
+
+        $this->session->set_flashdata('success', 'Cron secret key untuk bot ' . html_escape($bot['name']) . ' berhasil direset.');
+        redirect('bot_management');
     }
 }

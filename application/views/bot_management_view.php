@@ -32,6 +32,7 @@
                                         <th>ID</th>
                                         <th>Nama</th>
                                         <th>Webhook URL</th>
+                                        <th>Cron Key</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
@@ -40,12 +41,31 @@
                                     <tr>
                                         <td><?= $bot['id'] ?></td>
                                         <td><?= html_escape($bot['name']) ?></td>
-                                        <td><code class="webhook-url"><?= site_url('bot/webhook/' . $bot['webhook_token']) ?></code></td>
-                                         <td><a href="<?= site_url('bot_management/edit/' . $bot['id']) ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a></td>
+                                        <td>
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" class="form-control" value="<?= site_url('bot/webhook/' . $bot['webhook_token']) ?>" readonly>
+                                                <button class="btn btn-outline-secondary btn-copy" type="button"><i class="bi bi-clipboard"></i></button>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <?php $key = $bot['cron_secret_key'] ?? null; ?>
+                                            <?php if ($key): ?>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" class="form-control cron-key-input" value="************" data-key="<?= html_escape($key) ?>" readonly>
+                                                    <button class="btn btn-outline-secondary btn-toggle-key" type="button"><i class="bi bi-eye"></i></button>
+                                                </div>
+                                            <?php else: ?>
+                                                <span class="text-muted small">Not Set</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <a href="<?= site_url('bot_management/edit/' . $bot['id']) ?>" class="btn btn-sm btn-outline-primary" title="Edit Bot"><i class="bi bi-pencil"></i></a>
+                                            <a href="<?= site_url('bot_management/reset_cron_key/' . $bot['id']) ?>" class="btn btn-sm btn-outline-warning" title="Reset Cron Key" onclick="return confirm('Yakin ingin mereset kunci untuk bot ini?')"><i class="bi bi-arrow-clockwise"></i></a>
+                                        </td>
                                     </tr>
                                     <?php endforeach; else: ?>
                                     <tr>
-                                        <td colspan="3" class="text-center">Belum ada bot yang ditambahkan.</td>
+                                        <td colspan="5" class="text-center">Belum ada bot yang ditambahkan.</td>
                                     </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -55,5 +75,39 @@
                 </div>
             </div>
         </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Copy to clipboard for webhook URLs
+    document.querySelectorAll('.btn-copy').forEach(button => {
+        button.addEventListener('click', function() {
+            const input = this.previousElementSibling;
+            input.select();
+            document.execCommand('copy');
+            // Optional: feedback to user
+            const originalIcon = this.innerHTML;
+            this.innerHTML = '<i class="bi bi-check-lg"></i>';
+            setTimeout(() => { this.innerHTML = originalIcon; }, 1500);
+        });
+    });
+
+    // Toggle visibility for cron keys
+    document.querySelectorAll('.btn-toggle-key').forEach(button => {
+        button.addEventListener('click', function() {
+            const input = this.previousElementSibling;
+            const icon = this.querySelector('i');
+            if (input.type === 'password' || input.value === '************') {
+                input.type = 'text';
+                input.value = input.dataset.key;
+                icon.className = 'bi bi-eye-slash';
+            } else {
+                input.type = 'text'; // Keep it as text so '************' is visible
+                input.value = '************';
+                icon.className = 'bi bi-eye';
+            }
+        });
+    });
+});
+</script>
 
 <?php $this->load->view('templates/footer'); ?>

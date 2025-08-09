@@ -30,19 +30,6 @@
                     <li class="nav-item"><a class="nav-link <?= ($this->uri->segment(1) == 'user_management') ? 'active' : '' ?>" href="<?= site_url('user_management') ?>">Users</a></li>
                     <li class="nav-item"><a class="nav-link <?= ($this->uri->segment(1) == 'bot_management') ? 'active' : '' ?>" href="<?= site_url('bot_management') ?>">Bots</a></li>
                 </ul>
-
-                <?php if (!empty($all_bots)): ?>
-                <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-robot"></i> Bot: <strong><?= html_escape($selected_bot['name'] ?? 'Pilih Bot') ?></strong>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <?php foreach($all_bots as $bot): ?>
-                            <li><a class="dropdown-item <?= ($bot['id'] == $selected_bot_id) ? 'active' : '' ?>" href="<?= site_url('dashboard/switch_bot/' . $bot['id']) ?>"><?= html_escape($bot['name']) ?></a></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-                <?php endif; ?>
             </div>
         </div>
     </nav>

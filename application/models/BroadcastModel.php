@@ -92,9 +92,8 @@ class BroadcastModel extends CI_Model {
         return $this->db->update('broadcasts', ['last_error_message' => $message]);
     }
 
-    public function delete_broadcast($id, $bot_id) {
+    public function delete_broadcast($id) {
         $this->db->where('id', $id);
-        $this->db->where('bot_id', $bot_id);
         return $this->db->delete('broadcasts');
     }
 }

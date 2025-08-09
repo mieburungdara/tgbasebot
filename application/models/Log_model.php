@@ -61,31 +61,36 @@ class Log_model extends CI_Model {
      */
     public function get_logs($filters = [], $limit = 25, $offset = 0)
     {
+        $this->db->select('bot_logs.*, bots.name as bot_name');
+        $this->db->from('bot_logs');
+        $this->db->join('bots', 'bots.id = bot_logs.bot_id', 'left');
+
         $this->_apply_filters($filters);
-        $this->db->order_by('id', 'DESC');
+
+        $this->db->order_by('bot_logs.id', 'DESC');
         if ($limit > 0) {
             $this->db->limit($limit, $offset);
         }
-        $query = $this->db->get('bot_logs');
+        $query = $this->db->get();
         return $query->result_array();
     }
 
     /**
-     * Mengambil statistik log untuk bot tertentu.
+     * Mengambil statistik log, bisa untuk semua bot atau bot tertentu.
      */
-    public function get_stats($bot_id)
+    public function get_stats($bot_id = null)
     {
         $stats = [];
-        $this->db->where('bot_id', $bot_id);
+        if ($bot_id) $this->db->where('bot_id', $bot_id);
         $stats['total_logs'] = $this->db->count_all_results('bot_logs');
 
         $this->db->select('log_type, COUNT(*) as count');
-        $this->db->where('bot_id', $bot_id);
+        if ($bot_id) $this->db->where('bot_id', $bot_id);
         $this->db->group_by('log_type');
         $query = $this->db->get('bot_logs');
         $stats['logs_by_type'] = $query->result_array();
 
-        $this->db->where('bot_id', $bot_id);
+        if ($bot_id) $this->db->where('bot_id', $bot_id);
         $this->db->where('created_at >=', date('Y-m-d H:i:s', strtotime('-24 hours')));
         $stats['logs_today'] = $this->db->count_all_results('bot_logs');
 
@@ -111,12 +116,14 @@ class Log_model extends CI_Model {
     }
 
     /**
-     * Mengambil jumlah log harian selama N hari terakhir untuk bot tertentu.
+     * Mengambil jumlah log harian selama N hari terakhir, bisa untuk semua bot atau bot tertentu.
      */
-    public function get_daily_log_counts($bot_id, $days = 7)
+    public function get_daily_log_counts($bot_id = null, $days = 7)
     {
         $this->db->select('DATE(created_at) as date, COUNT(id) as count');
-        $this->db->where('bot_id', $bot_id);
+        if ($bot_id) {
+            $this->db->where('bot_id', $bot_id);
+        }
         $this->db->where('created_at >=', date('Y-m-d H:i:s', strtotime("-$days days")));
         $this->db->group_by('DATE(created_at)');
         $this->db->order_by('date', 'ASC');

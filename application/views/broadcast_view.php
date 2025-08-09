@@ -14,6 +14,15 @@
                                 <?php if(form_error('message')): ?><div class="text-danger small mt-1"><?= form_error('message') ?></div><?php endif; ?>
                             </div>
                             <div class="mb-3">
+                                <label for="sender_bot_id" class="form-label">Kirim Dari Bot</label>
+                                <select name="sender_bot_id" id="sender_bot_id" class="form-select" required>
+                                    <option value="">-- Pilih Bot Pengirim --</option>
+                                    <?php foreach($all_bots as $bot): ?>
+                                        <option value="<?= $bot['id'] ?>"><?= html_escape($bot['name']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
                                 <label for="target_tag" class="form-label">Target Segmen</label>
                                 <select name="target_tag" id="target_tag" class="form-select">
                                     <option value="all" selected>Semua Pengguna Aktif</option>
@@ -30,30 +39,17 @@
                     </div>
                 </div>
                 <div class="card mb-4 cron-info">
-                    <div class="card-header"><i class="bi bi-clock-history"></i> Informasi Cron Job</div>
+                    <div class="card-header"><i class="bi bi-clock-history"></i> Informasi Proses Latar Belakang</div>
                     <div class="card-body">
-                        <p class="mb-2">Gunakan salah satu metode di bawah ini untuk menjalankan siaran di latar belakang (setiap menit disarankan).</p>
+                        <p class="mb-2">Siaran dikirim oleh proses di latar belakang. Pastikan Anda telah mengatur cron job untuk memproses antrean.</p>
 
-                        <label class="form-label small"><strong>Opsi 1: Perintah CLI (Disarankan)</strong></label>
-                        <input type="text" class="form-control form-control-sm mb-3" value="* * * * * /usr/bin/php <?= FCPATH ?>cron/process_broadcasts.php" readonly>
-
-                        <label class="form-label small"><strong>Opsi 2: URL Cron Job (untuk bot ini saja)</strong></label>
-                        <?php $cron_key = $cron_secret_key ?? 'NOT_SET'; ?>
-                        <div class="input-group input-group-sm mb-3">
-                            <input type="text" id="cron-url" class="form-control" value="<?= site_url('cron/run/' . $selected_bot_id . '?token=') . $cron_key ?>" readonly>
-                            <button id="toggle-key-btn" class="btn btn-outline-secondary" type="button"><i class="bi bi-eye"></i></button>
+                        <label class="form-label small"><strong>Perintah Cron Job (Disarankan)</strong></label>
+                        <div class="input-group input-group-sm">
+                           <input type="text" class="form-control" value="* * * * * /usr/bin/php <?= FCPATH ?>index.php cron process_broadcasts" readonly>
+                           <button class="btn btn-outline-secondary" onclick="navigator.clipboard.writeText(this.previousElementSibling.value)"><i class="bi bi-clipboard"></i></button>
                         </div>
-
-                        <label class="form-label small"><strong>Manajemen & Tes:</strong></label>
-                        <div>
-                        <?= form_open('dashboard/reset_cron_key', ['class' => 'd-inline me-1']) ?>
-                            <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Apakah Anda yakin ingin me-reset kunci rahasia? URL cron lama akan berhenti bekerja.')">
-                                <i class="bi bi-arrow-clockwise"></i> Reset Kunci
-                            </button>
-                        <?= form_close() ?>
-                        <a href="<?= site_url('cron/run/' . $selected_bot_id . '?token=') . $cron_key ?>" target="_blank" class="btn btn-sm btn-info" id="test-cron-btn" <?= ($cron_key === 'NOT_SET') ? 'disabled' : '' ?>>
-                            <i class="bi bi-play-circle"></i> Jalankan Tes URL
-                        </a>
+                        <div class="form-text">
+                            Jalankan perintah ini setiap menit di server Anda. Kunci rahasia untuk setiap bot sekarang dikelola di halaman <a href="<?= site_url('bot_management') ?>">Manajemen Bot</a>.
                         </div>
                     </div>
                 </div>
