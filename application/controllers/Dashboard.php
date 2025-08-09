@@ -171,7 +171,7 @@ class Dashboard extends MY_Controller {
         $data['filters'] = $filters;
 
         // Ambil semua bot untuk dropdown pengirim
-        $data['all_bots'] = $this->BotModel->get_bots();
+        $data['all_bots'] = $this->BotModel->getAllBots();
 
         $this->load->view('broadcast_view', $data);
     }
