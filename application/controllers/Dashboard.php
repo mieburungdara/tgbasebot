@@ -19,15 +19,22 @@ class Dashboard extends MY_Controller {
 
     public function index()
     {
-        // Ambil filter dari URL, termasuk filter bot baru
+        // Gunakan bot yang dipilih dari sesi sebagai default
+        $bot_id_to_use = $this->input->get('bot_id') ?: $this->selected_bot_id;
+
+        // Ambil filter dari URL
         $filters = [
-            'bot_id'    => $this->input->get('bot_id'),
+            'bot_id'    => $bot_id_to_use, // Gunakan bot_id yang sudah ditentukan
             'log_type'  => $this->input->get('log_type'),
             'chat_id'   => $this->input->get('chat_id'),
             'chat_name' => $this->input->get('chat_name'),
             'keyword'   => $this->input->get('keyword')
         ];
         $filters = array_filter($filters, function($value) { return $value !== null && $value !== ''; });
+
+        // Ambil detail bot yang dipilih untuk ditampilkan di header
+        $data['selected_bot'] = $this->BotModel->getBotById($bot_id_to_use);
+
 
         // Konfigurasi Paginasi
         $config['base_url'] = site_url('dashboard/index');
