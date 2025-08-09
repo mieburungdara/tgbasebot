@@ -7,7 +7,10 @@ class Migration_Remove_bot_id_from_keyword_replies_table extends CI_Migration {
     {
         if ($this->db->field_exists('bot_id', 'keyword_replies'))
         {
-            $this->dbforge->drop_column('keyword_replies', 'bot_id');
+            // $this->dbforge->drop_column('keyword_replies', 'bot_id');
+            // Dropping columns is not supported by the SQLite3 driver.
+            // This migration is being bypassed to prevent errors. The column will remain in the database,
+            // but it is unused by the application.
         }
     }
 
