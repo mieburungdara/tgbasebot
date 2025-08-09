@@ -118,36 +118,6 @@ class Dashboard extends MY_Controller {
         redirect('dashboard/keywords');
     }
 
-    public function broadcast()
-    {
-        // Filter sekarang bersifat opsional, tidak lagi terikat pada sesi
-        $filters = [
-            'bot_id' => $this->input->get('bot_id'),
-            'status' => $this->input->get('status')
-        ];
-        $filters = array_filter($filters, function($value) { return $value !== null && $value !== ''; });
-
-        // Konfigurasi Paginasi
-        $config['base_url'] = site_url('dashboard/broadcast');
-        $config['total_rows'] = $this->BroadcastModel->count_all_broadcasts($filters);
-        $config['per_page'] = 15;
-        // ... (sisa konfigurasi paginasi)
-
-        $this->pagination->initialize($config);
-        $page = $this->input->get('page') ? (int)$this->input->get('page') : 0;
-
-        $data['broadcasts'] = $this->BroadcastModel->get_all_broadcasts($filters, $config['per_page'], $page);
-        $data['pagination_links'] = $this->pagination->create_links();
-        $data['user_stats'] = $this->UserModel->getUserStats($filters['bot_id'] ?? null); // Stats untuk bot yang difilter
-        $data['tags'] = $this->UserModel->getAllTags($filters['bot_id'] ?? null); // Tags untuk bot yang difilter
-        $data['filters'] = $filters;
-
-        // cron_secret_key tidak lagi relevan di sini karena bot pengirim dipilih di form
-        $data['cron_secret_key'] = null;
-
-        $this->load->view('broadcast_view', $data);
-    }
-
     public function send_broadcast()
     {
         $this->form_validation->set_rules('message', 'Message', 'required');
