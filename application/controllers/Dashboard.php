@@ -13,6 +13,7 @@ class Dashboard extends MY_Controller {
         $this->load->model('Settings_model');
         $this->load->model('BotModel'); // Load BotModel
         $this->load->library('pagination');
+        $this->load->library('form_validation');
         $this->load->helper('url');
         $this->load->helper('form');
     }
