@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
         infoContent.style.display = 'none';
 
         try {
-            const response = await fetch(`<?= site_url('bot_api/info/') ?>${botId}`);
+            const response = await fetch(`<?= site_url('bot_management/info/') ?>${botId}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -98,9 +98,9 @@ document.addEventListener('DOMContentLoaded', function () {
         this.disabled = true;
         this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
         try {
-            const response = await fetch(`<?= site_url('bot_api/set_webhook/') ?>${botId}`);
+            const response = await fetch(`<?= site_url('bot_management/set_webhook/') ?>${botId}`);
             const result = await response.json();
-            alert(result.ok ? 'Webhook berhasil di-set!' : `Gagal: ${result.description || 'Unknown error'}`);
+            alert(result.description || (result.ok ? 'Webhook berhasil di-set!' : 'Gagal melakukan operasi.'));
             await fetchBotInfo(); // Refresh info
         } catch (error) {
             alert('Terjadi kesalahan saat set webhook: ' + error.message);
@@ -117,9 +117,9 @@ document.addEventListener('DOMContentLoaded', function () {
         this.disabled = true;
         this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
         try {
-            const response = await fetch(`<?= site_url('bot_api/delete_webhook/') ?>${botId}`);
+            const response = await fetch(`<?= site_url('bot_management/delete_webhook/') ?>${botId}`);
             const result = await response.json();
-            alert(result.ok ? 'Webhook berhasil dihapus!' : `Gagal: ${result.description || 'Unknown error'}`);
+            alert(result.description || (result.ok ? 'Webhook berhasil dihapus!' : 'Gagal melakukan operasi.'));
             await fetchBotInfo(); // Refresh info
         } catch (error) {
             alert('Terjadi kesalahan saat menghapus webhook: ' + error.message);

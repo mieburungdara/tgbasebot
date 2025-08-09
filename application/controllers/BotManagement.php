@@ -9,6 +9,7 @@ class BotManagement extends MY_Controller {
         $this->load->helper('form');
         $this->load->library('form_validation');
         $this->load->model('Settings_model');
+        $this->load->model('Log_model');
     }
 
     public function index() {
@@ -84,5 +85,66 @@ class BotManagement extends MY_Controller {
         }
         // Redirect kembali ke halaman dashboard atau halaman sebelumnya
         redirect($this->input->server('HTTP_REFERER') ?: 'dashboard');
+    }
+
+    // --- API Methods for Bot Info Modal ---
+
+    private function _get_api_client($bot_id) {
+        $bot = $this->BotModel->getBotById($bot_id);
+        if (!$bot) {
+            return null;
+        }
+        return new ApiClient($bot['token'], $this->Log_model, $bot['id']);
+    }
+
+    public function info($bot_id) {
+        $api = $this->_get_api_client($bot_id);
+        if (!$api) {
+            $this->output->set_status_header(404)->set_content_type('application/json')->set_output(json_encode(['ok' => false, 'error' => 'Bot not found']));
+            return;
+        }
+
+        try {
+            $getMe_result = $api->getMe();
+            $getWebhookInfo_result = $api->getWebhookInfo();
+            $response_data = [
+                'getMe' => $getMe_result,
+                'getWebhookInfo' => $getWebhookInfo_result,
+            ];
+            $this->output->set_content_type('application/json')->set_output(json_encode($response_data));
+        } catch (Exception $e) {
+            $this->output->set_status_header(500)->set_content_type('application/json')->set_output(json_encode(['ok' => false, 'error' => $e->getMessage()]));
+        }
+    }
+
+    public function set_webhook($bot_id) {
+        $api = $this->_get_api_client($bot_id);
+        if (!$api) {
+            $this->output->set_status_header(404)->set_content_type('application/json')->set_output(json_encode(['ok' => false, 'error' => 'Bot not found']));
+            return;
+        }
+
+        try {
+            $webhook_url = site_url('bot_webhook/handle/' . $bot_id);
+            $result = $api->setWebhook($webhook_url);
+            $this->output->set_content_type('application/json')->set_output(json_encode($result));
+        } catch (Exception $e) {
+            $this->output->set_status_header(500)->set_content_type('application/json')->set_output(json_encode(['ok' => false, 'error' => $e->getMessage()]));
+        }
+    }
+
+    public function delete_webhook($bot_id) {
+        $api = $this->_get_api_client($bot_id);
+        if (!$api) {
+            $this->output->set_status_header(404)->set_content_type('application/json')->set_output(json_encode(['ok' => false, 'error' => 'Bot not found']));
+            return;
+        }
+
+        try {
+            $result = $api->deleteWebhook();
+            $this->output->set_content_type('application/json')->set_output(json_encode($result));
+        } catch (Exception $e) {
+            $this->output->set_status_header(500)->set_content_type('application/json')->set_output(json_encode(['ok' => false, 'error' => $e->getMessage()]));
+        }
     }
 }
