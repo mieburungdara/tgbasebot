@@ -15,7 +15,6 @@ class Migration_Create_settings_table extends CI_Migration {
             'key' => array(
                 'type' => 'VARCHAR',
                 'constraint' => '255',
-                'unique' => TRUE,
             ),
             'value' => array(
                 'type' => 'TEXT',
