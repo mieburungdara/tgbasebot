@@ -10,6 +10,7 @@ class MY_Controller extends CI_Controller {
 
     protected $all_bots;
     protected $selected_bot_id;
+    protected $selected_bot;
 
     public function __construct() {
         parent::__construct();
@@ -29,16 +30,24 @@ class MY_Controller extends CI_Controller {
         // Logika untuk menentukan bot yang dipilih
         $this->selected_bot_id = $this->session->userdata('selected_bot_id');
 
+        // Jika tidak ada bot yang dipilih di session DAN ada bot tersedia, gunakan bot pertama sebagai default
         if (!$this->selected_bot_id && !empty($this->all_bots)) {
-            // Jika tidak ada bot yang dipilih di session, gunakan bot pertama sebagai default
             $this->selected_bot_id = $this->all_bots[0]['id'];
             $this->session->set_userdata('selected_bot_id', $this->selected_bot_id);
         }
 
-        // Jadikan daftar bot dan bot yang dipilih tersedia secara global untuk semua view
+        // Muat data bot yang dipilih
+        if ($this->selected_bot_id) {
+            $this->selected_bot = $this->BotModel->getBotById($this->selected_bot_id);
+        } else {
+            $this->selected_bot = null;
+        }
+
+        // Jadikan variabel global untuk semua view
         $this->load->vars([
             'all_bots' => $this->all_bots,
-            'selected_bot_id' => $this->selected_bot_id
+            'selected_bot_id' => $this->selected_bot_id,
+            'selected_bot' => $this->selected_bot
         ]);
     }
 }
