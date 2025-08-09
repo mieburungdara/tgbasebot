@@ -75,4 +75,14 @@ class BotManagement extends MY_Controller {
         $this->session->set_flashdata('success', 'Cron secret key untuk bot ' . html_escape($bot['name']) . ' berhasil direset.');
         redirect('bot_management');
     }
+
+    public function switch_bot($bot_id) {
+        // Cek apakah bot dengan ID tersebut ada
+        $bot = $this->BotModel->getBotById($bot_id);
+        if ($bot) {
+            $this->session->set_userdata('selected_bot_id', $bot_id);
+        }
+        // Redirect kembali ke halaman dashboard atau halaman sebelumnya
+        redirect($this->input->server('HTTP_REFERER') ?: 'dashboard');
+    }
 }

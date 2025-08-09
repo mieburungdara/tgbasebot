@@ -9,12 +9,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class MY_Controller extends CI_Controller {
 
     protected $all_bots;
+    protected $selected_bot_id;
 
     public function __construct() {
         parent::__construct();
 
         $this->load->helper('url');
-        $this->load->library('session'); // Tetap berguna untuk flash messages
+        $this->load->library('session');
         $this->load->model('BotModel');
 
         // Muat semua bot agar tersedia untuk filter/dropdown di view
@@ -25,9 +26,19 @@ class MY_Controller extends CI_Controller {
             redirect('bot_management');
         }
 
-        // Jadikan daftar bot tersedia secara global untuk semua view
+        // Logika untuk menentukan bot yang dipilih
+        $this->selected_bot_id = $this->session->userdata('selected_bot_id');
+
+        if (!$this->selected_bot_id && !empty($this->all_bots)) {
+            // Jika tidak ada bot yang dipilih di session, gunakan bot pertama sebagai default
+            $this->selected_bot_id = $this->all_bots[0]['id'];
+            $this->session->set_userdata('selected_bot_id', $this->selected_bot_id);
+        }
+
+        // Jadikan daftar bot dan bot yang dipilih tersedia secara global untuk semua view
         $this->load->vars([
             'all_bots' => $this->all_bots,
+            'selected_bot_id' => $this->selected_bot_id
         ]);
     }
 }
