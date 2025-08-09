@@ -89,7 +89,7 @@ $route['cron/run/(:num)'] = 'cron/run/$1'; // Untuk bot spesifik (URL)
 $route['bot/webhook/(:any)'] = 'bot_webhook/handle/$1';
 
 // Rute untuk Manajemen Bot
-$route['bot_management'] = 'bot_management';
-$route['bot_management/add'] = 'bot_management/add';
-$route['bot_management/edit/(:num)'] = 'bot_management/edit/$1';
-$route['bot_management/update/(:num)'] = 'bot_management/update/$1';
+$route['bot_management'] = 'BotManagement';
+$route['bot_management/add'] = 'BotManagement/add';
+$route['bot_management/edit/(:num)'] = 'BotManagement/edit/$1';
+$route['bot_management/update/(:num)'] = 'BotManagement/update/$1';
