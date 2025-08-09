@@ -25,7 +25,7 @@ class MY_Controller extends CI_Controller {
 
         // Jika tidak ada bot sama sekali, paksa redirect ke halaman manajemen bot
         // kecuali jika kita sudah berada di sana.
-        if (empty($this->all_bots) && strtolower($this->uri->segment(1)) !== 'botmanagement') {
+        if (empty($this->all_bots) && strtolower($this->uri->segment(1)) !== 'bot_management') {
             redirect('bot_management');
         }
 
