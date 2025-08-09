@@ -48,7 +48,7 @@ class Dashboard extends MY_Controller {
 
         $chart_days = $this->input->get('days') ? (int)$this->input->get('days') : 14;
         $chart_days = in_array($chart_days, [7, 14, 30]) ? $chart_days : 14;
-        $chart_data = $this->Log_model->get_daily_log_counts($chart_days, $this->selected_bot_id);
+        $chart_data = $this->Log_model->get_daily_log_counts($this->selected_bot_id, $chart_days);
         $data['chart_labels'] = json_encode(array_keys($chart_data));
         $data['chart_values'] = json_encode(array_values($chart_data));
         $data['chart_days'] = $chart_days;

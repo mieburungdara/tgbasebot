@@ -113,7 +113,7 @@ class Log_model extends CI_Model {
     /**
      * Mengambil jumlah log harian selama N hari terakhir untuk bot tertentu.
      */
-    public function get_daily_log_counts($days = 7, $bot_id)
+    public function get_daily_log_counts($bot_id, $days = 7)
     {
         $this->db->select('DATE(created_at) as date, COUNT(id) as count');
         $this->db->where('bot_id', $bot_id);
