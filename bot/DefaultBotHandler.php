@@ -1,6 +1,8 @@
 <?php
 
-class BotHandler
+require_once __DIR__ . '/HandlerInterface.php';
+
+class DefaultBotHandler implements HandlerInterface
 {
     protected ApiClient $api;
     protected Log_model $logger;

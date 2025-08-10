@@ -39,12 +39,23 @@ class BotManagement extends MY_Controller {
         if (empty($data['bot'])) {
             show_404();
         }
-        $this->load->view('bot_edit_view', $data); // We need to create this view
+
+        // Scan for available handlers
+        $handler_files = glob(FCPATH . 'bot/*Handler.php');
+        $available_handlers = [];
+        foreach ($handler_files as $file) {
+            // Get class name from filename
+            $available_handlers[] = basename($file, '.php');
+        }
+        $data['available_handlers'] = $available_handlers;
+
+        $this->load->view('bot_edit_view', $data);
     }
 
     public function update($id) {
         $this->form_validation->set_rules('name', 'Nama Bot', 'required|trim');
         $this->form_validation->set_rules('token', 'Token API Telegram', 'required|trim');
+        $this->form_validation->set_rules('handler_type', 'Tipe Handler', 'required|trim');
 
         if ($this->form_validation->run() == FALSE) {
             $this->edit($id);
@@ -52,6 +63,7 @@ class BotManagement extends MY_Controller {
             $bot_data = [
                 'name' => $this->input->post('name'),
                 'token' => $this->input->post('token'),
+                'handler_type' => $this->input->post('handler_type'),
             ];
             $this->db->where('id', $id)->update('bots', $bot_data);
             redirect('bot_management');
