@@ -25,12 +25,24 @@ class Bot_webhook extends CI_Controller {
             $this->load->model('UserModel');
             $this->load->model('KeywordModel');
 
+            // --- Dynamic Handler Loading ---
+            $handler_class = $bot['handler_type'] ?? 'DefaultBotHandler';
+            $handler_file = FCPATH . 'bot/' . $handler_class . '.php';
+
+            if (!file_exists($handler_file)) {
+                throw new Exception("Handler file not found: {$handler_file}");
+            }
+            require_once $handler_file;
+            if (!class_exists($handler_class)) {
+                throw new Exception("Handler class not found: {$handler_class}");
+            }
+            // --- End Dynamic Handler Loading ---
+
             require_once FCPATH . 'bot/ApiClient.php';
-            require_once FCPATH . 'bot/BotHandler.php';
 
             // Inisialisasi komponen bot dengan bot_id
             $apiClient = new ApiClient($bot_api_token, $this->Log_model, $bot_id);
-            $botHandler = new BotHandler(
+            $botHandler = new $handler_class(
                 $apiClient,
                 $this->Log_model,
                 $this->UserModel,

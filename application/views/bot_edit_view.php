@@ -15,6 +15,17 @@
                     <input type="text" name="token" class="form-control" value="<?= set_value('token', $bot['token']) ?>" required>
                     <?= form_error('token', '<div class="text-danger small">', '</div>') ?>
                 </div>
+                <div class="mb-3">
+                    <label for="handler_type" class="form-label">Tipe Handler</label>
+                    <select name="handler_type" class="form-select" required>
+                        <?php foreach ($available_handlers as $handler): ?>
+                            <option value="<?= $handler ?>" <?= set_select('handler_type', $handler, ($bot['handler_type'] == $handler)) ?>>
+                                <?= $handler ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <?= form_error('handler_type', '<div class="text-danger small">', '</div>') ?>
+                </div>
                 <hr>
                 <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                 <a href="<?= site_url('bot_management') ?>" class="btn btn-secondary">Batal</a>
