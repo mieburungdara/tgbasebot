@@ -118,10 +118,10 @@ class Settings extends MY_Controller {
                 $this->db->query('SET FOREIGN_KEY_CHECKS = 0');
             }
 
-            // Drop all tables except migrations
+            // Drop all tables except migrations and sqlite system tables
             $tables = $this->db->list_tables();
             foreach ($tables as $table) {
-                if ($table !== 'migrations') {
+                if ($table !== 'migrations' && $table !== 'sqlite_sequence') {
                     $this->dbforge->drop_table($table, TRUE, TRUE);
                 }
             }
