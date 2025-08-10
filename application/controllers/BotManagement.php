@@ -125,7 +125,13 @@ class BotManagement extends MY_Controller {
         }
 
         try {
-            $webhook_url = site_url('bot_webhook/handle/' . $bot_id);
+            $bot = $this->BotModel->getBotById($bot_id);
+            if (empty($bot) || empty($bot['webhook_token'])) {
+                $this->output->set_status_header(400)->set_content_type('application/json')->set_output(json_encode(['ok' => false, 'error' => 'Bot data is incomplete or missing webhook token.']));
+                return;
+            }
+
+            $webhook_url = site_url('bot/webhook/' . $bot['webhook_token']);
             $result = $api->setWebhook($webhook_url);
             $this->output->set_content_type('application/json')->set_output(json_encode($result));
         } catch (Exception $e) {
