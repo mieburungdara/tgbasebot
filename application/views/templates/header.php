@@ -29,6 +29,7 @@
                     <li class="nav-item"><a class="nav-link <?= ($this->uri->segment(1) == 'broadcast') ? 'active' : '' ?>" href="<?= site_url('dashboard/broadcast') ?>">Broadcast</a></li>
                     <li class="nav-item"><a class="nav-link <?= ($this->uri->segment(1) == 'user_management') ? 'active' : '' ?>" href="<?= site_url('user_management') ?>">Users</a></li>
                     <li class="nav-item"><a class="nav-link <?= ($this->uri->segment(1) == 'bot_management') ? 'active' : '' ?>" href="<?= site_url('bot_management') ?>">Bots</a></li>
+                    <li class="nav-item"><a class="nav-link <?= ($this->uri->segment(1) == 'settings') ? 'active' : '' ?>" href="<?= site_url('settings') ?>">Pengaturan</a></li>
                 </ul>
             </div>
         </div>
