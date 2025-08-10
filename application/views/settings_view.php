@@ -1,19 +1,20 @@
-<?php $this->load->view('templates/header', ['title' => 'Pengaturan Bot']); ?>
+<?php $this->load->view('templates/header', ['title' => 'Pengaturan']); ?>
+
+<h1 class="mb-4">Pengaturan</h1>
+
+<?php if ($this->session->flashdata('success_message')): ?>
+    <div class="alert alert-success"><?= $this->session->flashdata('success_message'); ?></div>
+<?php endif; ?>
+<?php if ($this->session->flashdata('error_message')): ?>
+    <div class="alert alert-danger"><?= $this->session->flashdata('error_message'); ?></div>
+<?php endif; ?>
 
 <?php if (!$selected_bot): ?>
     <div class="alert alert-warning">
-        Silakan <a href="<?= site_url('bot_management') ?>">tambahkan bot</a> atau pilih bot dari menu di atas untuk mengelola pengaturan.
+        Silakan <a href="<?= site_url('bot_management') ?>">tambahkan bot</a> atau pilih bot dari menu di atas untuk mengelola pengaturan spesifik bot.
     </div>
 <?php else: ?>
-    <h1 class="mb-4">Pengaturan untuk Bot: <?= html_escape($selected_bot['name']); ?></h1>
-
-    <?php if ($this->session->flashdata('success_message')): ?>
-        <div class="alert alert-success"><?= $this->session->flashdata('success_message'); ?></div>
-    <?php endif; ?>
-    <?php if ($this->session->flashdata('error_message')): ?>
-        <div class="alert alert-danger"><?= $this->session->flashdata('error_message'); ?></div>
-    <?php endif; ?>
-
+    <h2 class="h3 mb-3">Pengaturan untuk Bot: <?= html_escape($selected_bot['name']); ?></h2>
     <div class="row">
         <div class="col-lg-6">
             <div class="card mb-4">
@@ -51,6 +52,27 @@
     <?php endif; ?>
 
 <?php endif; ?>
+
+<hr class="my-4">
+
+<h2 class="h3 mb-3">Pengaturan Database</h2>
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card mb-4 border-danger">
+            <div class="card-header bg-danger text-white">
+                <i class="bi bi-exclamation-triangle-fill"></i> Zona Berbahaya
+            </div>
+            <div class="card-body">
+                <p>Menekan tombol ini akan <strong>menghapus semua data</strong> dan mengatur ulang database ke status awal. Semua bot, pengguna, log, dan riwayat siaran akan hilang secara permanen.</p>
+                <p class="text-danger">Tindakan ini tidak dapat diurungkan. Lanjutkan dengan hati-hati.</p>
+                <a href="<?= site_url('settings/forge_database'); ?>" class="btn btn-danger" onclick="return confirm('PERINGATAN: Anda akan menghapus SEMUA data di database. Apakah Anda benar-benar yakin ingin melanjutkan?');">
+                    <i class="bi bi-trash-fill"></i> Forge Database
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <script>
     // Toggle Bot Token Visibility
